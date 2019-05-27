@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+               xmlns:app="http://schemas.android.com/apk/res-auto"
+               android:orientation="vertical"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent">
+
+    <TextView
+            android:text="@string/materia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/textView" android:textSize="18sp"
+            android:gravity="center" android:textStyle="bold"/>
+<com.google.android.material.textfield.TextInputLayout
+        app:errorEnabled="true"
+        android:id="@+id/materia_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:hint="Materia">
+
+    <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/materia_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+</com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+            android:text="@string/nota"
+            android:layout_width="match_parent" android:gravity="center"
+            android:layout_height="wrap_content" android:id="@+id/textView2" android:textSize="18sp"
+            android:textStyle="bold"/>
+
+<com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/valor_text_input"
+        android:layout_width="match_parent"
+        android:clickable="true"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:hint="nome">
+
+    <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/valor_edit_text"
+            android:inputType="number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+</com.google.android.material.textfield.TextInputLayout>
+</LinearLayout>

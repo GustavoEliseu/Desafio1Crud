@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Desafio 1 Crud</string>
+    <string name="addAlunoTitle">Adicionar aluno</string>
+    <string name="nome">Nome:</string>
+    <string name="nota">Valor da nota:</string>
+    <string name="materia">Matéria:</string>
+    <string name="data_txt">Data de Nascimento:</string>
+</resources>
