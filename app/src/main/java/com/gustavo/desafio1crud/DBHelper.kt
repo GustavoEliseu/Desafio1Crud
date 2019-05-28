@@ -27,22 +27,27 @@ class DBHelper (context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLi
         values.put(COLUNA_NOME, aluno.nome)
         values.put(COLUNA_DATA, aluno.data)
         val db = this.writableDatabase
-        val myLong:Long=db.insert(TABLE_ALUNOS, null, values)
-        //precaução para caso de algum erro
-        if(myLong==-1L){
-            deleteAluno(-1)
+        var myLong: Long
+        try {
+             myLong= db.insertOrThrow(TABLE_ALUNOS, null, values)
+            //precaução para caso de algum erro
+        }catch(t:Throwable){
+            t.printStackTrace()
+            myLong=-1
         }
         db.close()
         return myLong
     }
+
+    fun getLastInsert():Cursor?{
+        val db = this.writableDatabase
+        return db.rawQuery("SELECT seq  from sqlite_sequence  where name=\"$TABLE_ALUNOS\"",null)
+    }
+
+    //TODO - verificar se está correto e efetivar no clique da actionbar
     fun deleteAluno(matricula:Int){
         val db = this.writableDatabase
         db.execSQL("DELETE FROM $TABLE_ALUNOS WHERE $COLUNA_MATRICULA = "+matricula+";")
-    }
-
-    fun eraseTableAluno(){
-        val db = this.writableDatabase
-        db.execSQL("DELETE FROM $TABLE_ALUNOS;")
     }
 
     fun addNota(nota: Nota) {
@@ -51,7 +56,7 @@ class DBHelper (context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLi
         values.put(COLUNA_NOTA, nota.valor)
         values.put(COLUNA_MATERIA, nota.materia)
         val db = this.writableDatabase
-        db.insert(TABLE_NOTAS, null, values)
+        db.insertOrThrow(TABLE_NOTAS, null, values)
         db.close()
 
     }

@@ -11,10 +11,13 @@ import android.os.Parcelable
 import android.transition.Explode
 import android.transition.Slide
 import android.transition.Transition
+import android.view.ActionMode
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.selection.SelectionTracker
 import com.google.android.material.card.MaterialCardView
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -27,16 +30,20 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
 
     val meuFragAluno: Fragment = AlunoFragment()
     lateinit var meuFragNota: Fragment
-    var selecionado:Boolean=false;
-    var contadorSelected:Int= 0;
+    var controle:Boolean = true
+
     val myFragManager: FragmentManager= supportFragmentManager
 
-    override fun onListFragmentInteraction(item: Aluno?,v:View) {
+    override fun onListFragmentInteraction(item: Aluno?,v:View,selecionados:Int) {
         if(item != null){
-            if(selecionado==false){
+            if(selecionados==0){
+                controle=true
+            }
+            else if(selecionados==1){
+                if(controle==true){
             meuFragNota = NotaFragment(item)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                meuFragNota.enterTransition = Slide()
+                meuFragNota.enterTransition = android.transition.Fade()
                 meuFragNota.returnTransition = null
             }
             val myFragTrans=myFragManager.beginTransaction()
@@ -45,30 +52,34 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
 
             myFragTrans.replace(R.id.myFrag, meuFragNota, "Nota")
 
-            myFragTrans.commit()}
-            else{
-                (v as MaterialCardView).isChecked=!(v as MaterialCardView).isChecked
-                if((v as MaterialCardView).isChecked==true){
-                    contadorSelected++
-                }else {
-                    contadorSelected--
-                    if(contadorSelected==0) selecionado=false
+            myFragTrans.commit()
                 }
+            }else{
+                controle=false
             }
         }
     }
 
-    override fun onListFragmentInteraction(v: View){
-
-        selecionado = true;
-        contadorSelected++
+    override fun onListFragmentInteraction(v: View,selecionados:Int) {
+        if (selecionados == 1||selecionados ==0) {
+            if (controle == true) {
+                controle = false
+            } else {
+                controle = true
+            }
+        }
     }
 
     private lateinit var bancodeDados: SQLiteDatabase
 
+    override fun onActionModeStarted(mode: ActionMode?) {
+        super.onActionModeStarted(mode)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
     }
 
 

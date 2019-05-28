@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.fragment_nota.view.*
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
+ * TODO: Implementar a seguir exemplo de MyAlunoRecyclerViewAdapter.
  */
 class MyNotaRecyclerViewAdapter(
     private val mValues: ArrayList<Nota>,

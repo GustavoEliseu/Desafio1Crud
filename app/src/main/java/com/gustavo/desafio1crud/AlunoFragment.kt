@@ -1,6 +1,7 @@
 package com.gustavo.desafio1crud
 
-import android.annotation.TargetApi
+
+
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
@@ -8,43 +9,51 @@ import android.os.Bundle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.fragment_aluno_list.view.*
 import android.app.DatePickerDialog
-import android.graphics.Rect
-import android.os.Build
-import android.transition.Transition
+import android.database.Cursor
+import android.util.Log
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.annotation.RequiresApi
-import androidx.transition.Explode
+import androidx.appcompat.app.ActionBar
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StorageStrategy
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.dialog_add_aluno.view.*
 import kotlinx.android.synthetic.main.fragment_aluno.view.*
-import kotlinx.android.synthetic.main.fragment_nota_list.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.ViewModel
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.selection.ItemKeyProvider
+import androidx.recyclerview.selection.OnContextClickListener
+import com.google.android.material.card.MaterialCardView
+
 
 /**
  * A fragment representing a list of Items.
  * Activities containing this fragment MUST implement the
  * [AlunoFragment.OnListFragmentInteractionListener] interface.
  */
-class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, View.OnLongClickListener {
+class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
 
 
 
-    // TODO: Customize parameters
     private var columnCount = 1
     val myCalendar:Calendar = Calendar.getInstance();
-
+    lateinit var mAdapter:MyAlunoRecyclerViewAdapter
     lateinit var mRecycler:RecyclerView
     lateinit var alunos:ArrayList<Aluno>
+    var mSelectionTracker:SelectionTracker<Long>?=null
+    var actionMode:ActionMode? = null
+    var toolbar: ActionBar? = null
 
     private var listener: OnListFragmentInteractionListener? = null
 
@@ -54,6 +63,14 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
+
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+        actionMode!!.finish()
+        actionMode=null
     }
 
     override fun onCreateView(
@@ -63,7 +80,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
         val view = inflater.inflate(R.layout.fragment_aluno_list, container, false)
         mRecycler =view.mRVList
         alunos = ArrayList<Aluno>()
-
+        toolbar= (activity as AppCompatActivity).supportActionBar
             with(mRecycler) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
@@ -104,22 +121,55 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
                         cursor.close();
                 }
                 dbHandler.close()
-                mRecycler.setAdapter(MyAlunoRecyclerViewAdapter(alunos, listener))
-                mRecycler.adapter!!.notifyDataSetChanged()
+                mAdapter =MyAlunoRecyclerViewAdapter(alunos, listener,context)
+                mAdapter.setHasStableIds(true)
+                mRecycler.setAdapter(mAdapter)
+                mAdapter!!.notifyDataSetChanged()
+
+
+                    mSelectionTracker = SelectionTracker.Builder<Long>(
+                        "my_selection",
+                        mRecycler,
+                        MyAlunoRecyclerViewAdapter.KeyProvider(mAdapter),
+                        MyAlunoRecyclerViewAdapter.DetailsLookup(mRecycler, context),
+                        StorageStrategy.createLongStorage()
+                    )
+                        .withSelectionPredicate(MyAlunoRecyclerViewAdapter.Predicate())
+                        .build();
+                //TODO - corrigir a actionBar
+                    mSelectionTracker!!.addObserver(object : SelectionTracker.SelectionObserver<Long>() {
+                        override fun onSelectionChanged() {
+                            if (mSelectionTracker!!.hasSelection() && actionMode == null) {
+                                actionMode= toolbar?.startActionMode(ActionModeController(context,mSelectionTracker!!))
+                            } else if (!mSelectionTracker!!.hasSelection() && actionMode != null) {
+                                actionMode!!.finish()
+                                actionMode=null
+
+                            } else {
+
+                            }
+                            val itemIterable: Iterator<Long> = mSelectionTracker!!.getSelection().iterator();
+                            while (itemIterable.hasNext()) {
+                                Log.i("Tracker: ", itemIterable.next().toString());
+                            }
+                        }
+                    });
+
+                    mAdapter.setSelectionTracker(mSelectionTracker!!)
 
             }
+
 
         (activity as MainActivity).FAB_add.setOnClickListener(this)
 
         return view
         }
 
-
     fun updateLabel(v:View) {
-        val myFormat:String = "dd/MM/yy"; //In which you need put here
-        val sdf:SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH);
+        val myFormat:String = "dd/MM/yy";//In which you need put here
+        val sdf:SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH)
 
-        v.date_edit_text.setText(sdf.format(myCalendar.getTime()));
+        v.date_edit_text.setText(sdf.format(myCalendar.getTime()))
     }
 
 
@@ -140,6 +190,9 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
     override fun onClick(v: View?) {
         when(v?.id) {
             R.id.FAB_add ->{
+                if(mAdapter.mSelectionTracker!=null){
+                    mAdapter.mSelectionTracker!!.clearSelection()
+                }
                 val meuBuilder:MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
 
                 val v:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
@@ -174,41 +227,53 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
 
                 meuBuilder.setCancelable(true)
 
-                meuBuilder.setPositiveButton("add",
-                    DialogInterface.OnClickListener { dialog,
-                                                      which ->
-                        var nome = v.nome_edit_text.text
-                        var data = v.date_edit_text.text
-
-                        val dbHandler = DBHelper(context!!, null)
-                        val aluno = Aluno(nome.toString(),data.toString())
-                        try{
-                            val myLong:Long=dbHandler.addAluno(aluno)
-                            if(myLong!=-1L){
-                            alunos.add(aluno)
-                            Toast.makeText(context!!, nome.toString()+ " foi adicionado ao database", Toast.LENGTH_LONG).show()
-                            mRecycler.adapter!!.notifyItemInserted(alunos.size-1)
-                            }else{
-                                mRecycler.adapter!!.notifyItemInserted(alunos.size)
-                                Toast.makeText(context!!,"Aluno já existente!",Toast.LENGTH_SHORT).show()
-
-                            }
-
-                        }catch(e:Exception){
-                            e.printStackTrace()
-                        }catch(t:Throwable){
-                            t.printStackTrace()
-                        }finally {
-                            dbHandler.close()
-                        }
-
-
-
-                    }
+                meuBuilder.setPositiveButton("add",null
 
                 )
+                val meuAlert = meuBuilder.create()
 
-                meuBuilder.create().show();
+                meuAlert.show()
+
+                meuAlert.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
+                    var nome = v.nome_edit_text
+                    var data = v.date_edit_text
+                    if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
+                        val dbHandler = DBHelper(context!!, null)
+                        val aluno = Aluno(nome.text.toString(), data.text.toString())
+                        try {
+                            val myLong: Long = dbHandler.addAluno(aluno)
+                            if (myLong != -1L) {
+                                val cursor: Cursor? = dbHandler.getLastInsert()
+                                cursor!!.moveToLast()
+                                val mat:Int =cursor!!.getInt(cursor.getColumnIndex("seq"))
+                                aluno.matricula = mat
+                                alunos.add(aluno)
+                                Toast.makeText(
+                                    context!!,
+                                    nome.toString() + " foi adicionado ao database",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                Toast.makeText(context,myLong.toString(),Toast.LENGTH_SHORT).show()
+                                mRecycler.adapter!!.notifyItemInserted(alunos.size - 1)
+
+                            } else {
+                                mRecycler.adapter!!.notifyItemInserted(alunos.size)
+                                Toast.makeText(context!!, "Aluno já existente!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context,myLong.toString(),Toast.LENGTH_SHORT).show()
+                            }
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                        } finally {
+                            dbHandler.close()
+                            meuAlert.dismiss()
+                        }
+                    }else{
+                        Toast.makeText(context,"Valores invalidos",Toast.LENGTH_SHORT).show()
+                    }
+                })
             }
         }
     }
@@ -218,11 +283,19 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
         imm.hideSoftInputFromWindow(v.getRootView()!!.getWindowToken(), 0)
     }
 
+    /*override fun onContextClick(e: MotionEvent): Boolean {
+         if (actionMode != null) {
+            return false;
+        }
 
-    override fun onLongClick(v: View?): Boolean {
-        v?.isSelected=true
-        return false
-    }
+    // Start the CAB using the ActionMode.Callback defined below
+        if (getActivity() != null) {
+            actionMode = ( activity as AppCompatActivity).startSupportActionMode(actionModeCallback);
+        }
+
+        return true;
+    }*/
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -236,21 +309,13 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
      * for more information.
      */
     interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: Aluno?,v:View)
-        fun onListFragmentInteraction(v: View)
-    }
-
-    interface OnLongClickListener{
-        abstract fun onLongClick(v: View,position:Int): Boolean
+        fun onListFragmentInteraction(item: Aluno?,v:View,selecionados:Int)
+        fun onListFragmentInteraction(v:View ,selecionados:Int)
     }
 
     companion object {
 
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
-
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
             AlunoFragment().apply {
@@ -258,67 +323,6 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener, Vie
                     putInt(ARG_COLUMN_COUNT, columnCount)
                 }
             }
-    }
-
-
-
-
-    inner class MyAlunoRecyclerViewAdapter(
-        private val mValues: ArrayList<Aluno>,
-        private val mListener: AlunoFragment.OnListFragmentInteractionListener?
-    ) : androidx.recyclerview.widget.RecyclerView.Adapter<MyAlunoRecyclerViewAdapter.ViewHolder>() {
-
-        private val mOnClickListener: View.OnClickListener
-        private val mOnLongClickListener: View.OnLongClickListener
-
-
-        init {
-            mOnClickListener = View.OnClickListener { v ->
-                val item = v.tag as Aluno
-                // Notify the active callbacks interface (the activity, if the fragment is attached to
-                // one) that an item has been selected.
-                mListener?.onListFragmentInteraction(item,v)
-            }
-            mOnLongClickListener = View.OnLongClickListener { v ->
-                val item = v.tag as Aluno
-                // Notify the active callbacks interface (the activity, if the fragment is attached to
-                // one) that an item has been selected.
-                mListener?.onListFragmentInteraction(v)
-                true
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.fragment_aluno, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = mValues[position]
-            holder.myNome.text = item.nome
-            holder.myMatricula.text = item.matricula.toString()
-            holder.myData.text = item.data
-
-            with(holder.mView) {
-                tag = item
-                setOnClickListener(mOnClickListener)
-                setOnLongClickListener(mOnLongClickListener)
-            }
-
-        }
-
-        override fun getItemCount(): Int = mValues.size
-
-        inner class ViewHolder(val mView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(mView) {
-            val myMatricula: TextView = mView.aluno_matricula
-            val myNome: TextView = mView.materia_nome
-            val myData: TextView = mView.materia_nota
-
-            override fun toString(): String {
-                return super.toString() + " '" + myNome.text + ", "+myData.text+"'"
-            }
-        }
     }
 }
 

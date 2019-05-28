@@ -28,10 +28,12 @@ import kotlin.collections.ArrayList
  * Activities containing this fragment MUST implement the
  * [NotaFragment.OnListFragmentInteractionListener] interface.
  */
+//TODO - Implementar selection a exemplo de AlunoFragment()
 class NotaFragment() : Fragment(),View.OnClickListener {
     override fun onClick(v: View?) {
         when(v?.id) {
             R.id.FAB_add ->{
+
                 val meuBuilder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.addAlunoTitle)
 
@@ -75,7 +77,7 @@ class NotaFragment() : Fragment(),View.OnClickListener {
 
     }
 
-    // TODO: Customize parameters
+
     private var columnCount = 1
     lateinit var mRecycler:RecyclerView
     private lateinit var aluno: Aluno
@@ -172,16 +174,15 @@ class NotaFragment() : Fragment(),View.OnClickListener {
      * for more information.
      */
     interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
+
         fun onListFragmentInteraction(item: Nota)
     }
 
     companion object {
 
-        // TODO: Customize parameter argument names
+
         const val ARG_COLUMN_COUNT = "column-count"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
             NotaFragment().apply {

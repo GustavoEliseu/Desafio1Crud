@@ -5,4 +5,6 @@
     <string name="nota">Valor da nota:</string>
     <string name="materia">Matéria:</string>
     <string name="data_txt">Data de Nascimento:</string>
+    <string name="deletar">Deletar</string>
+    <string name="cancelar">Cancelar</string>
 </resources>
