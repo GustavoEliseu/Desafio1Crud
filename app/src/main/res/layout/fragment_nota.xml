@@ -7,45 +7,44 @@
                 type="com.gustavo.desafio1crud.ViewModelNota"
         />
     </data>
-<com.google.android.material.card.MaterialCardView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:targetApi="lollipop"
-        android:id="@+id/notaCard"
-        android:checkable="true"
-        style="@style/Widget.MaterialComponents.CardView"
-        app:cardElevation="8dp"
-        android:layout_margin="5dp"
-        app:strokeWidth="4dp"
-        android:minHeight="50dp">
-    <LinearLayout
+    <!--TODO - Preparar os valores para responsividade-->
+    <com.google.android.material.card.MaterialCardView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" android:weightSum="5" android:gravity="center">
+            android:layout_height="80dp"
+            tools:targetApi="lollipop"
+            android:id="@+id/notaCard"
+            android:checkable="true"
+            style="@style/Widget.MaterialComponents.CardView"
+            app:cardElevation="8dp"
+            android:layout_margin="5dp"
+            app:strokeWidth="4dp"
+            android:minHeight="50dp">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" android:weightSum="8" android:gravity="center">
 
-        <TextView
-                android:id="@+id/materia_nome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceListItem"
-                android:layout_marginTop="6dp"
-                android:text="@{viewModelNota.materia}"
-                android:layout_marginLeft="27dp"
-                android:layout_marginStart="27dp"
-                android:layout_weight="4"
-                android:textSize="16sp"/>
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/materia_nota"
-                android:transitionGroup="true"
-                android:text="@{viewModelNota.valor}"
-                android:layout_marginTop="5dp"
-                android:layout_marginLeft="0dp"
-                android:layout_weight="1"
-                android:textSize="16sp"
-        />
-    </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+            <TextView
+                    android:id="@+id/materia_nome"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:text="@{viewModelNota.materia}"
+                    android:layout_marginLeft="27dp"
+                    android:layout_marginStart="27dp"
+                    android:layout_weight="5"
+                    android:textSize="16sp"/>
+            <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/materia_nota"
+                    android:transitionGroup="true"
+                    android:text="@{viewModelNota.valor}"
+                    android:layout_marginLeft="0dp"
+                    android:layout_weight="3"
+                    android:textSize="16sp"
+                    android:gravity="left|center_vertical"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

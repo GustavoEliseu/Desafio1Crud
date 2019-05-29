@@ -1,80 +1,50 @@
 package com.gustavo.desafio1crud
 
-import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.graphics.Rect
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.transition.Explode
-import android.transition.Slide
-import android.transition.Transition
 import android.view.ActionMode
-import android.view.View
-import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.selection.SelectionTracker
-import com.google.android.material.card.MaterialCardView
+import com.gustavo.desafio1crud.MyDataClasses.Aluno
+import com.gustavo.desafio1crud.MyDataClasses.Nota
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.concurrent.schedule
 
-class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteractionListener,NotaFragment.OnListFragmentInteractionListener {
-    override fun onListFragmentInteraction(item: Nota) {
-
-    }
+class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteractionListener,
+    NotaFragment.OnListFragmentInteractionListener {
 
     val meuFragAluno: Fragment = AlunoFragment()
     lateinit var meuFragNota: Fragment
-    var controle:Boolean = true
     val myFragManager: FragmentManager= supportFragmentManager
 
-    override fun onListFragmentInteraction(item: Aluno?,v:View,selecionados:Int) {
-        if(myFragManager.fragments.contains(meuFragAluno)){
-            if(item != null){
-                if(selecionados==0){
-                    controle=true
-                }
-                else if(selecionados==1){
-                    if(controle==true){
-                        (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker?.clearSelection()
+    //FragmentAluno Interaction e cliques
+    override fun onListFragmentInteraction(item: Aluno?) {
+            if (item != null) {
+                (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker?.clearSelection()
                 meuFragNota = NotaFragment(item)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     meuFragNota.enterTransition = android.transition.Fade()
                     meuFragNota.returnTransition = null
                 }
-                val myFragTrans=myFragManager.beginTransaction()
+                val myFragTrans = myFragManager.beginTransaction()
 
                 meuFragNota.setRetainInstance(true)
 
                 myFragTrans.replace(R.id.myFrag, meuFragNota, "Nota")
 
                 myFragTrans.commit()
-                    }
-                }else{
-                    controle=false
-                }
             }
-        }
+    }
+    //FragmentNota interaction
+    override fun onListFragmentInteraction(item: Nota) {
+
     }
 
-    override fun onListFragmentInteraction(v: View,selecionados:Int) {
-        Toast.makeText(this,"teste",Toast.LENGTH_SHORT).show()
-        if (selecionados == 1||selecionados ==0) {
-            if (controle == true) {
-                controle = false
-            } else {
-                controle = true
-            }
-        }
-    }
-
-    private lateinit var bancodeDados: SQLiteDatabase
-
+        //implementação actionMode
     override fun onActionModeStarted(mode: ActionMode?) {
         super.onActionModeStarted(mode)
     }
@@ -84,8 +54,8 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
         setContentView(R.layout.activity_main)
 
     }
-
-
+    //TODO -- Corrigir comentários da aplicação
+    //TODO -- Implementar corretamente o savedStates do selection do NotaFragment
     override fun onStart(){
         super.onStart()
         //val myDBHelper:DBHelper= DBHelper(this,null)
@@ -102,15 +72,19 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
 
     override fun onBackPressed() {
         var myFragment:Fragment? = null
+        var controleBackPressed:Boolean = false
         if(myFragManager.findFragmentByTag("Nota")!=null){
+            if ((myFragManager.fragments[0] as NotaFragment).selectionTracker.hasSelection()) {
+                (myFragManager.fragments[0] as NotaFragment).selectionTracker.clearSelection();
+            } else {
             myFragment =  myFragManager.findFragmentByTag("Nota") as NotaFragment
+                controleBackPressed= true
+            }
         }
         if (myFragment != null && myFragment.isVisible()) {
             myFragManager.beginTransaction().replace(R.id.myFrag,meuFragAluno,"Aluno").commit()
         }else{
-            if ((myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!=null&&(myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!!.hasSelection()) {
-                (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!!.clearSelection();
-            } else {
+            if(controleBackPressed==true) {
                 super.onBackPressed();
             }
         }

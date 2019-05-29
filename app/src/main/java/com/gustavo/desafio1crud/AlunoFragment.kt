@@ -3,38 +3,34 @@ package com.gustavo.desafio1crud
 
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Context
-import android.content.DialogInterface
+import android.database.Cursor
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.DatePicker
+import android.widget.Toast
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.synthetic.main.fragment_aluno_list.view.*
-import android.app.DatePickerDialog
-import android.database.Cursor
-import android.util.Log
-import android.view.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.*
-import androidx.appcompat.app.ActionBar
-import androidx.recyclerview.selection.SelectionTracker
-import androidx.recyclerview.selection.StorageStrategy
+import com.gustavo.desafio1crud.Adapters.MyAlunoRecyclerViewAdapter
+import com.gustavo.desafio1crud.DataBase.DBHelper
+import com.gustavo.desafio1crud.MyDataClasses.Aluno
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_add_aluno.view.*
-import kotlinx.android.synthetic.main.fragment_aluno.view.*
+import kotlinx.android.synthetic.main.fragment_aluno_list.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
-import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModel
-import androidx.recyclerview.selection.ItemDetailsLookup
-import androidx.recyclerview.selection.ItemKeyProvider
-import androidx.recyclerview.selection.OnContextClickListener
-import com.google.android.material.card.MaterialCardView
 
 
 /**
@@ -42,76 +38,11 @@ import com.google.android.material.card.MaterialCardView
  * Activities containing this fragment MUST implement the
  * [AlunoFragment.OnListFragmentInteractionListener] interface.
  */
-class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,ActionMode.Callback {
-
-    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-        if(item!=null){
-            when(item!!.itemId){
-                R.id.cancel_item-> mSelectionTracker!!.clearSelection()
-
-                R.id.delete_item->
-                    if(mSelectionTracker!=null && context!=null){
-                        val iterator:Iterator<Long> = mSelectionTracker!!.selection.iterator()
-                        val dbHandler = DBHelper(context!!,null)
-                        var arrayRmv = IntArray(mSelectionTracker!!.selection.size())
-                        var i:Int = 0
-                        while(iterator.hasNext()){
-                            arrayRmv[i] = iterator.next().toInt()
-                            Toast.makeText(context, arrayRmv[i].toString(),Toast.LENGTH_SHORT).show()
-                            val x:Int =dbHandler.deleteAluno(alunos.get( arrayRmv[i]).matricula)
-                            if(x>=1) {
-                                i++
-                            }
-                        }
-                        while(i>0) {
-                            i--
-                            Log.e("Deleted: ",alunos.get( arrayRmv[i]).nome)
-                            alunos.remove(alunos.get( arrayRmv[i]))
-                            mAdapter.notifyItemRemoved(arrayRmv[i])
-
-                        }
-                        dbHandler.close()
-                        mSelectionTracker!!.clearSelection()
-                    }
-            }
-        }
-        return true
-    }
-
-
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        mSelectionTracker!!.onSaveInstanceState(outState)
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-        if(mode!=null){
-            mode.getMenuInflater().inflate(R.menu.selected_menu,menu);
-
-        }
-        return true
-    }
-
-
-    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-
-        return false
-    }
-
-    override fun onDestroyActionMode(mode: ActionMode?) {
-        if(mSelectionTracker!=null){
-
-            mSelectionTracker!!.clearSelection()
-        }
-    }
-
-
-
+class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
 
     private var columnCount = 1
     val myCalendar:Calendar = Calendar.getInstance();
-    lateinit var mAdapter:MyAlunoRecyclerViewAdapter
+    lateinit var mAdapter: MyAlunoRecyclerViewAdapter
     lateinit var mRecycler:RecyclerView
     lateinit var alunos:ArrayList<Aluno>
     var mSelectionTracker:SelectionTracker<Long>?=null
@@ -160,15 +91,15 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
                     cursor!!.moveToFirst()
 
 
-                    alunos.add(0,Aluno(
+                    alunos.add(0, Aluno(
                         cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_NOME)),
                         cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_DATA)),
                         cursor.getInt(cursor.getColumnIndex(DBHelper.COLUNA_MATRICULA))
-                        )
+                    )
                     )
 
                     while (cursor.moveToNext()) {
-                        alunos.add(cursor.position,Aluno(
+                        alunos.add(cursor.position, Aluno(
                             cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_NOME)),
                             cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_DATA)),
                             cursor.getInt(cursor.getColumnIndex(DBHelper.COLUNA_MATRICULA))
@@ -188,42 +119,9 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
                         cursor.close();
                 }
                 dbHandler.close()
-                mAdapter =MyAlunoRecyclerViewAdapter(alunos, listener,context)
-                mAdapter.setHasStableIds(true)
+                mAdapter = MyAlunoRecyclerViewAdapter(alunos, listener, context)
                 mRecycler.setAdapter(mAdapter)
                 mAdapter!!.notifyDataSetChanged()
-
-
-                    mSelectionTracker = SelectionTracker.Builder<Long>(
-                        "my_selection",
-                        mRecycler,
-                        MyAlunoRecyclerViewAdapter.KeyProvider(mAdapter),
-                        MyAlunoRecyclerViewAdapter.DetailsLookup(mRecycler, context),
-                        StorageStrategy.createLongStorage()
-                    )
-                        .withSelectionPredicate(MyAlunoRecyclerViewAdapter.Predicate())
-                        .build();
-                //TODO - corrigir a actionBar
-                    mSelectionTracker!!.addObserver(object : SelectionTracker.SelectionObserver<Long>() {
-                        override fun onSelectionChanged() {
-                            if (mSelectionTracker!!.hasSelection() && actionMode == null) {
-                                actionMode= toolbar?.startActionMode(this@AlunoFragment)
-                            } else if (!mSelectionTracker!!.hasSelection() && actionMode != null) {
-                                actionMode!!.finish()
-                                actionMode=null
-
-                            } else {
-
-                            }
-                            val itemIterable: Iterator<Long> = mSelectionTracker!!.getSelection().iterator();
-                            while (itemIterable.hasNext()) {
-                                Log.i("Tracker: ", itemIterable.next().toString());
-                            }
-                        }
-                    });
-
-                    mAdapter.setSelectionTracker(mSelectionTracker!!)
-
             }
 
 
@@ -314,7 +212,8 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
                     var data = v.date_edit_text
                     if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
                         val dbHandler = DBHelper(context!!, null)
-                        val aluno = Aluno(nome.text.toString(), data.text.toString())
+                        val aluno =
+                            Aluno(nome.text.toString(), data.text.toString())
                         try {
                             val myLong: Long = dbHandler.addAluno(aluno)
                             if (myLong != -1L) {
@@ -323,12 +222,14 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
                                 val mat:Int =cursor!!.getInt(cursor.getColumnIndex("seq"))
                                 aluno.matricula = mat
                                 alunos.add(aluno)
+
+                                //informa que o usuário foi adicionado corretamente
                                 Toast.makeText(
                                     context!!,
-                                    nome.toString() + " foi adicionado ao database",
+                                    nome.text.toString() + " foi adicionado ao database",
                                     Toast.LENGTH_LONG
                                 ).show()
-                                Toast.makeText(context,myLong.toString(),Toast.LENGTH_SHORT).show()
+                                //atualiza o
                                 mRecycler.adapter!!.notifyItemInserted(alunos.size - 1)
 
                             } else {
@@ -360,19 +261,6 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
         imm.hideSoftInputFromWindow(v.getRootView()!!.getWindowToken(), 0)
     }
 
-    /*override fun onContextClick(e: MotionEvent): Boolean {
-         if (actionMode != null) {
-            return false;
-        }
-
-    // Start the CAB using the ActionMode.Callback defined below
-        if (getActivity() != null) {
-            actionMode = ( activity as AppCompatActivity).startSupportActionMode(actionModeCallback);
-        }
-
-        return true;
-    }*/
-
 
     /**
      * This interface must be implemented by activities that contain this
@@ -386,8 +274,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,Acti
      * for more information.
      */
     interface OnListFragmentInteractionListener {
-        fun onListFragmentInteraction(item: Aluno?,v:View,selecionados:Int)
-        fun onListFragmentInteraction(v:View ,selecionados:Int)
+        fun onListFragmentInteraction(item: Aluno?)
     }
 
     companion object {

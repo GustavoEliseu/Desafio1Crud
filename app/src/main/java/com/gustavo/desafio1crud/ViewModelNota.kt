@@ -1,6 +1,8 @@
 package com.gustavo.desafio1crud
 
-class ViewModelNota(nota: Nota) {
+import com.gustavo.desafio1crud.MyDataClasses.Nota
+
+class ViewModelNota(val nota: Nota) {
 
     val materia: String
     val valor: String

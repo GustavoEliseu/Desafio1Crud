@@ -4,16 +4,13 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent" android:layout_height="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto">
-    <androidx.appcompat.widget.Toolbar android:layout_width="match_parent"
-                                       android:layout_height="wrap_content"
-                                       android:id="@+id/toolbar"></androidx.appcompat.widget.Toolbar>
 
 
-        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:transitionGroup="true"
-             tools:targetApi="lollipop"
-             android:id="@+id/myFrag"
+    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                 xmlns:tools="http://schemas.android.com/tools"
+                 android:transitionGroup="true"
+                 tools:targetApi="lollipop"
+                 android:id="@+id/myFrag"
              />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

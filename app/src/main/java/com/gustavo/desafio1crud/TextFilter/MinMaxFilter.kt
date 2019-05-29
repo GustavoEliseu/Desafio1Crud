@@ -1,4 +1,4 @@
-package com.gustavo.desafio1crud
+package com.gustavo.desafio1crud.TextFilter
 
 import android.text.InputFilter
 import android.text.Spanned

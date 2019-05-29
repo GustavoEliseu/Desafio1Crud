@@ -1,6 +1,6 @@
 package com.gustavo.desafio1crud
 
-import androidx.databinding.ObservableInt
+import com.gustavo.desafio1crud.MyDataClasses.Aluno
 
 class ViewModelAluno(aluno: Aluno) {
 

@@ -7,4 +7,70 @@
     <string name="data_txt">Data de Nascimento:</string>
     <string name="deletar">Deletar</string>
     <string name="cancelar">Cancelar</string>
+
+
+    <!--Inicializando Alunos para teste-->
+    <string-array name="alunos_nomes">
+        <item>Gustavo</item>
+        <item>Renan</item>
+        <item>Jefferson Araujo</item>
+        <item>Collin</item>
+        <item>Matthew</item>
+        <item>Hector</item>
+        <item>Dracula</item>
+        <item>Alucard</item>
+        <item>OD</item>
+        <item>Someone</item>
+        <item>Aluno 1</item>
+        <item>Thanos</item>
+        <item>We\'re no strangers to love</item>
+        <item>You know the rules and so do I</item>
+        <item>A full commitment\'s what I\'m thinking of</item>
+        <item>You wouldn\'t get this from any other guy</item>
+        <item>I just wanna tell you how I\'m feeling</item>
+        <item>Gotta make you understand</item>
+        <item>Never gonna give you up</item>
+        <item>Never gonna let you down</item>
+        <item>Never gonna run around and desert you</item>
+        <item>Never gonna make you cry</item>
+        <item>Never gonna say goodbye</item>
+        <item>Never gonna tell a lie and hurt you</item>
+    </string-array>
+    <string-array name="alunos_datas">
+        <item>11/03/1994</item>
+        <item>19/06/1991</item>
+        <item>01/01/1901</item>
+        <item>03/03/1978</item>
+        <item>04/08/2014</item>
+        <item>03/04/1965</item>
+        <item>02/09/1431</item>
+        <item>23/05/1769</item>
+        <item>20/12/2012</item>
+        <item>01/01/2001</item>
+        <item>03/03/1996</item>
+        <item>07/12/1932</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+        <item>27/07/1987</item>
+    </string-array>
+
+    <!--Inicializando Notas para teste-->
+    <string-array name="notas_materia">
+        <item>Matematica</item>
+        <item>Literatura</item>
+        <item>Quimica</item>
+        <item>Fisica</item>
+        <item>Musica</item>
+        <item>História</item>
+    </string-array>
+
 </resources>
