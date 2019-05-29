@@ -2,7 +2,7 @@ package com.gustavo.desafio1crud
 
 import androidx.databinding.ObservableInt
 
-class ViewModel(aluno: Aluno) {
+class ViewModelAluno(aluno: Aluno) {
 
     val nome: String
     val data: String

@@ -1,10 +1,6 @@
 package com.gustavo.desafio1crud
 
 import android.content.Context
-import android.os.AsyncTask
-import android.os.Handler
-import android.util.Log
-import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import com.gustavo.desafio1crud.databinding.FragmentAlunoBinding
@@ -14,22 +10,9 @@ import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import kotlinx.android.synthetic.main.fragment_aluno.view.*
 import java.util.*
-import android.text.method.Touch.onTouchEvent
 import android.view.*
-import android.widget.Toast
-import kotlin.concurrent.schedule
-import android.text.method.Touch.onTouchEvent
 import android.view.MotionEvent
-import android.view.GestureDetector
-import android.view.InputDevice
-
-
-
-
-
-
 
 
 class MyAlunoRecyclerViewAdapter(
@@ -37,6 +20,8 @@ class MyAlunoRecyclerViewAdapter(
     private val mListener: AlunoFragment.OnListFragmentInteractionListener?,
     private val context:Context
 ) : androidx.recyclerview.widget.RecyclerView.Adapter<MyAlunoRecyclerViewAdapter.ViewHolder>() {
+
+
     var mSelectionTracker: SelectionTracker<Long>? = null
     private val mOnClickListener: View.OnClickListener
     private val mOnLongClickListener: View.OnLongClickListener
@@ -70,7 +55,7 @@ class MyAlunoRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(ViewModel(mValues.get(position)),position)
+        holder.bind(ViewModelAluno(mValues.get(position)),position)
     }
 
 
@@ -160,9 +145,9 @@ class MyAlunoRecyclerViewAdapter(
 
 
 
-        fun bind(viewModel: ViewModel, position: Int) {
+        fun bind(viewModelAluno: ViewModelAluno, position: Int) {
             details.position = position.toLong()
-            binding.setViewModel(viewModel)
+            binding.setViewModelAluno(viewModelAluno)
             binding.executePendingBindings()
             //inicializando o onClick para o Main, e o LongClick(pois se o mesmo não for configurado, será considerado um click normal)
             with(mView) {

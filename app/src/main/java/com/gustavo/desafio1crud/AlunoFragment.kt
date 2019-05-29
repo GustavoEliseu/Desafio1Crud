@@ -42,7 +42,70 @@ import com.google.android.material.card.MaterialCardView
  * Activities containing this fragment MUST implement the
  * [AlunoFragment.OnListFragmentInteractionListener] interface.
  */
-class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
+class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener,ActionMode.Callback {
+
+    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+        if(item!=null){
+            when(item!!.itemId){
+                R.id.cancel_item-> mSelectionTracker!!.clearSelection()
+
+                R.id.delete_item->
+                    if(mSelectionTracker!=null && context!=null){
+                        val iterator:Iterator<Long> = mSelectionTracker!!.selection.iterator()
+                        val dbHandler = DBHelper(context!!,null)
+                        var arrayRmv = IntArray(mSelectionTracker!!.selection.size())
+                        var i:Int = 0
+                        while(iterator.hasNext()){
+                            arrayRmv[i] = iterator.next().toInt()
+                            Toast.makeText(context, arrayRmv[i].toString(),Toast.LENGTH_SHORT).show()
+                            val x:Int =dbHandler.deleteAluno(alunos.get( arrayRmv[i]).matricula)
+                            if(x>=1) {
+                                i++
+                            }
+                        }
+                        while(i>0) {
+                            i--
+                            Log.e("Deleted: ",alunos.get( arrayRmv[i]).nome)
+                            alunos.remove(alunos.get( arrayRmv[i]))
+                            mAdapter.notifyItemRemoved(arrayRmv[i])
+
+                        }
+                        dbHandler.close()
+                        mSelectionTracker!!.clearSelection()
+                    }
+            }
+        }
+        return true
+    }
+
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        mSelectionTracker!!.onSaveInstanceState(outState)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+        if(mode!=null){
+            mode.getMenuInflater().inflate(R.menu.selected_menu,menu);
+
+        }
+        return true
+    }
+
+
+    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+
+        return false
+    }
+
+    override fun onDestroyActionMode(mode: ActionMode?) {
+        if(mSelectionTracker!=null){
+
+            mSelectionTracker!!.clearSelection()
+        }
+    }
+
 
 
 
@@ -64,12 +127,16 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
 
+        if(savedInstanceState!=null){
+            mSelectionTracker?.onRestoreInstanceState(savedInstanceState)
+        }
+
     }
 
 
     override fun onPause() {
         super.onPause()
-        actionMode!!.finish()
+        actionMode?.finish()
         actionMode=null
     }
 
@@ -140,7 +207,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                     mSelectionTracker!!.addObserver(object : SelectionTracker.SelectionObserver<Long>() {
                         override fun onSelectionChanged() {
                             if (mSelectionTracker!!.hasSelection() && actionMode == null) {
-                                actionMode= toolbar?.startActionMode(ActionModeController(context,mSelectionTracker!!))
+                                actionMode= toolbar?.startActionMode(this@AlunoFragment)
                             } else if (!mSelectionTracker!!.hasSelection() && actionMode != null) {
                                 actionMode!!.finish()
                                 actionMode=null
@@ -172,6 +239,14 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
         v.date_edit_text.setText(sdf.format(myCalendar.getTime()))
     }
 
+
+    override fun onDestroyOptionsMenu() {
+        super.onDestroyOptionsMenu()
+        if (actionMode != null) {
+            actionMode!!.finish()
+            actionMode = null
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -277,6 +352,8 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
             }
         }
     }
+
+
     //função para esconder o teclado na hora de selecionar a data
     fun hideKeyboard( context:Context,v: View) {
         val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager

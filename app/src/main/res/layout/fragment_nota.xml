@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data >
+
+        <variable
+                name="viewModelNota"
+                type="com.gustavo.desafio1crud.ViewModelNota"
+        />
+    </data>
+<com.google.android.material.card.MaterialCardView
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:targetApi="lollipop"
+        android:id="@+id/notaCard"
         android:checkable="true"
         style="@style/Widget.MaterialComponents.CardView"
         app:cardElevation="8dp"
@@ -22,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceListItem"
                 android:layout_marginTop="6dp"
+                android:text="@{viewModelNota.materia}"
                 android:layout_marginLeft="27dp"
                 android:layout_marginStart="27dp"
                 android:layout_weight="4"
@@ -30,10 +40,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/materia_nota"
                 android:transitionGroup="true"
+                android:text="@{viewModelNota.valor}"
                 android:layout_marginTop="5dp"
                 android:layout_marginLeft="0dp"
                 android:layout_weight="1"
                 android:textSize="16sp"
         />
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>
+</layout>

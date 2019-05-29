@@ -3,8 +3,8 @@
     <data >
 
     <variable
-            name="viewModel"
-            type="com.gustavo.desafio1crud.ViewModel"
+            name="viewModelAluno"
+            type="com.gustavo.desafio1crud.ViewModelAluno"
     />
     </data>
 <com.google.android.material.card.MaterialCardView
@@ -31,7 +31,7 @@
                 android:id="@+id/aluno_matricula"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
-                android:text="@{viewModel.matricula}"
+                android:text="@{viewModelAluno.matricula}"
                 android:transitionGroup="true"
                 android:layout_margin="@dimen/text_margin"
                 android:textAppearance="?attr/textAppearanceListItem"/>
@@ -54,7 +54,7 @@
                     android:textAppearance="?attr/textAppearanceListItem"
                     android:layout_marginTop="0dp"
                     android:textSize="16sp"
-                    android:text="@{viewModel.nome}"
+                    android:text="@{viewModelAluno.nome}"
                     android:layout_toEndOf="@+id/textView3" android:layout_toRightOf="@+id/textView3"
                     android:layout_marginLeft="11dp" android:layout_marginStart="11dp"
                     android:layout_alignTop="@+id/textView3"/>
@@ -68,10 +68,10 @@
                     android:textSize="12sp"/>
             <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/data"
+                    android:layout_height="wrap_content" android:id="@+id/txt_data"
                     android:layout_marginLeft="11dp"
                     android:textSize="12sp"
-                    android:text="@{viewModel.data}"
+                    android:text="@{viewModelAluno.data}"
                     android:layout_toEndOf="@+id/textView4" android:layout_toRightOf="@+id/textView4"
                     android:layout_marginStart="11dp" android:layout_alignTop="@+id/textView4"
                     android:layout_marginTop="0dp"/>

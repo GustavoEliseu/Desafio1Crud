@@ -18,7 +18,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.dialog_add_aluno.view.*
 import kotlinx.android.synthetic.main.dialog_add_nota.view.*
+import kotlinx.android.synthetic.main.fragment_aluno.view.*
 import kotlinx.android.synthetic.main.fragment_aluno_list.view.*
+import kotlinx.android.synthetic.main.fragment_nota.view.*
 import kotlinx.android.synthetic.main.fragment_nota_list.view.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -100,6 +102,9 @@ class NotaFragment() : Fragment(),View.OnClickListener {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_nota_list, container, false)
+        view.alunoCard.txt_nome.text = aluno.nome
+        view.alunoCard.txt_data.text = aluno.data
+        view.alunoCard.aluno_matricula.text = aluno.matricula.toString()
         mRecycler= view.myNotaRecycler
         // Set the adapter
             with(mRecycler) {

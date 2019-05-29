@@ -31,36 +31,39 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
     val meuFragAluno: Fragment = AlunoFragment()
     lateinit var meuFragNota: Fragment
     var controle:Boolean = true
-
     val myFragManager: FragmentManager= supportFragmentManager
 
     override fun onListFragmentInteraction(item: Aluno?,v:View,selecionados:Int) {
-        if(item != null){
-            if(selecionados==0){
-                controle=true
-            }
-            else if(selecionados==1){
-                if(controle==true){
-            meuFragNota = NotaFragment(item)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                meuFragNota.enterTransition = android.transition.Fade()
-                meuFragNota.returnTransition = null
-            }
-            val myFragTrans=myFragManager.beginTransaction()
-
-            meuFragNota.setRetainInstance(true)
-
-            myFragTrans.replace(R.id.myFrag, meuFragNota, "Nota")
-
-            myFragTrans.commit()
+        if(myFragManager.fragments.contains(meuFragAluno)){
+            if(item != null){
+                if(selecionados==0){
+                    controle=true
                 }
-            }else{
-                controle=false
+                else if(selecionados==1){
+                    if(controle==true){
+                        (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker?.clearSelection()
+                meuFragNota = NotaFragment(item)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    meuFragNota.enterTransition = android.transition.Fade()
+                    meuFragNota.returnTransition = null
+                }
+                val myFragTrans=myFragManager.beginTransaction()
+
+                meuFragNota.setRetainInstance(true)
+
+                myFragTrans.replace(R.id.myFrag, meuFragNota, "Nota")
+
+                myFragTrans.commit()
+                    }
+                }else{
+                    controle=false
+                }
             }
         }
     }
 
     override fun onListFragmentInteraction(v: View,selecionados:Int) {
+        Toast.makeText(this,"teste",Toast.LENGTH_SHORT).show()
         if (selecionados == 1||selecionados ==0) {
             if (controle == true) {
                 controle = false
@@ -83,7 +86,6 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
     }
 
 
-
     override fun onStart(){
         super.onStart()
         //val myDBHelper:DBHelper= DBHelper(this,null)
@@ -103,10 +105,14 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
         if(myFragManager.findFragmentByTag("Nota")!=null){
             myFragment =  myFragManager.findFragmentByTag("Nota") as NotaFragment
         }
-        if (myFragment != null && myFragment!!.isVisible()) {
+        if (myFragment != null && myFragment.isVisible()) {
             myFragManager.beginTransaction().replace(R.id.myFrag,meuFragAluno,"Aluno").commit()
         }else{
-            super.onBackPressed()
+            if ((myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!=null&&(myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!!.hasSelection()) {
+                (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker!!.clearSelection();
+            } else {
+                super.onBackPressed();
+            }
         }
 
     }

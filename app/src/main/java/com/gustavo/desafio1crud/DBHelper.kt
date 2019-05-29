@@ -5,6 +5,10 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.collection.ArraySet
+import android.R.id
+
+
 
 class DBHelper (context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     private val CREATE_TABLE_ALUNOS =
@@ -45,9 +49,15 @@ class DBHelper (context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLi
     }
 
     //TODO - verificar se está correto e efetivar no clique da actionbar
-    fun deleteAluno(matricula:Int){
+
+    fun deleteAluno(matricula:Int):Int{
         val db = this.writableDatabase
-        db.execSQL("DELETE FROM $TABLE_ALUNOS WHERE $COLUNA_MATRICULA = "+matricula+";")
+        val whereClause = "$COLUNA_MATRICULA=?"
+        val whereArgs = arrayOf<String>(matricula.toString())
+        val x = db.delete(TABLE_ALUNOS, whereClause ,whereArgs)
+            if(x>=1){db.delete(TABLE_NOTAS, whereClause ,whereArgs)}
+        db.close()
+        return x
     }
 
     fun addNota(nota: Nota) {
@@ -66,16 +76,12 @@ class DBHelper (context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLi
         return db.rawQuery("SELECT * FROM $TABLE_ALUNOS", null)
     }
 
+    //criada para caso seja solicitado
     fun getAllNotas(): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_NOTAS", null)
     }
-    fun removeDuplicates(){
-        val db = this.readableDatabase
-        val remove:String ="DELETE FROM $TABLE_ALUNOS WHERE $COLUNA_MATRICULA NOT IN(SELECT MIN($COLUNA_MATRICULA) FROM $TABLE_ALUNOS GROUP BY $COLUNA_NOME)"
-        db.execSQL(remove)
-    }
-
+    //função para receber todos os alunos
     fun getAllNotasAluno(matricula:Int): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_NOTAS WHERE $COLUNA_MATRICULA  = "+matricula, null)
