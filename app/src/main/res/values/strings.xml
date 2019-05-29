@@ -1,12 +1,20 @@
 <resources>
     <string name="app_name">Desafio 1 Crud</string>
-    <string name="addAlunoTitle">Adicionar aluno</string>
     <string name="nome">Nome:</string>
     <string name="nota">Valor da nota:</string>
     <string name="materia">Matéria:</string>
     <string name="data_txt">Data de Nascimento:</string>
     <string name="deletar">Deletar</string>
     <string name="cancelar">Cancelar</string>
+    <string name="dialog_addnota_title">Adicionar Nota</string>
+    <string name="dialog_addaluno_title">Adicionar aluno</string>
+    <string name="valor_nota">Nota:</string>
+    <string name="modificar_txt">Modificar Aluno</string>
+    <string name="add_bd">foi adicionado ao database</string>
+    <string name="MUDAR">Modificar Aluno</string>
+    <string name="mudar_nome">Mudar Nome!</string>
+    <string name="sim">Sim</string>
+    <string name="deseja_edit">Deseja editar o aluno?</string>
 
 
     <!--Inicializando Alunos para teste-->

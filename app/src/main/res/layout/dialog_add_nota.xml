@@ -4,6 +4,13 @@
                android:orientation="vertical"
                android:layout_width="match_parent"
                android:layout_height="match_parent">
+    <TextView
+            android:text="@string/dialog_addnota_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/textView3" android:textSize="20sp"
+            android:gravity="center" android:textStyle="bold"
+            android:background="@color/title_dialog"
+            android:textColor="@color/design_default_color_on_primary"/>
 
     <TextView
             android:text="@string/materia"
@@ -14,7 +21,6 @@
         app:errorEnabled="true"
         android:id="@+id/materia_text_input"
         android:layout_width="match_parent"
-        app:boxStrokeColor="@color/design_default_color_background"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:hint="Materia">

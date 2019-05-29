@@ -98,13 +98,21 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         return myLong
     }
 
+    fun updateAluno(nome:String,data:String, matricula:Int):Boolean{
+        val db = this.writableDatabase
+        val cv:ContentValues = ContentValues()
+        cv.put(COLUNA_NOME,nome)
+        cv.put(COLUNA_DATA,data)
+
+
+        return db.update(TABLE_ALUNOS,cv, COLUNA_MATRICULA+" = ? ",arrayOf(matricula.toString()))>0
+    }
+
     //Seleciona o ultimo AUTOINCREMENT adicionado na tabela Alunos
     fun getLastInsert():Cursor?{
         val db = this.readableDatabase
         return db.rawQuery("SELECT seq from sqlite_sequence WHERE lower(name)='$TABLE_ALUNOS'",null)
     }
-
-
 
     //FUNÇÃO TESTE, adiciona notas para os alunos gerados automaticamente
     fun addNota(nota: Nota, db: SQLiteDatabase) {
@@ -145,6 +153,7 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         val db = this.readableDatabase
         return db.rawQuery("SELECT  * FROM $TABLE_NOTAS", null)
     }
+
     //função para receber todas as notas de um aluno
     fun getAllNotasAluno(matricula:Int): Cursor? {
         val db = this.readableDatabase

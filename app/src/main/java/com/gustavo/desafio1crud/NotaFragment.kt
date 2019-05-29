@@ -1,12 +1,19 @@
 package com.gustavo.desafio1crud
 
+import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.database.Cursor
 import android.os.Bundle
 import android.text.InputFilter
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
+import android.widget.DatePicker
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
@@ -25,9 +32,13 @@ import com.gustavo.desafio1crud.MyDataClasses.Aluno
 import com.gustavo.desafio1crud.MyDataClasses.Nota
 import com.gustavo.desafio1crud.TextFilter.MinMaxFilter
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.dialog_add_aluno.view.*
 import kotlinx.android.synthetic.main.dialog_add_nota.view.*
 import kotlinx.android.synthetic.main.fragment_aluno.view.*
 import kotlinx.android.synthetic.main.fragment_nota_list.view.*
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
@@ -38,6 +49,8 @@ import kotlinx.android.synthetic.main.fragment_nota_list.view.*
 //TODO -- IMPLEMENTAR ONCLICK E DIALOG PARA EDITAR NOME DO ALUNO
 //TODO -- Implementar corretamente o savedStates do NotaFragment
 class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
+
+    val myCalendar:Calendar = Calendar.getInstance();
 
     override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean {
         val inflater = actionMode.menuInflater
@@ -73,7 +86,6 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                 selectionTracker.clearSelection()
                 while(i>0) {
                     i--
-                    Log.e("Deleted: ",notas.get( arrayRmv[i]).materia)
                     notas.remove(notas.get( arrayRmv[i]))
 
                     //Necessário, pois NotifyItemRemoved estava causando crashs quando selecionava outra nota, provavelmente devido a como o ID é gerado. Verificar!!
@@ -101,7 +113,6 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
             R.id.FAB_add ->{
                 selectionTracker.clearSelection()
                 val meuBuilder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.addAlunoTitle)
 
                 val view:View = layoutInflater.inflate(R.layout.dialog_add_nota,null,false)
                 meuBuilder.setView(view)
@@ -191,6 +202,112 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
         view.alunoCard.txt_nome.text = aluno.nome
         view.alunoCard.txt_data.text = aluno.data
         view.alunoCard.aluno_matricula.text = aluno.matricula.toString()
+
+        view.alunoCard.setOnClickListener(object: View.OnClickListener {
+            override fun onClick(v:View){
+                val meuBuilder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
+                    .setTitle(getString(R.string.mudar_nome))
+                    .setCancelable(true)
+                    .setMessage(getString(R.string.deseja_edit))
+                meuBuilder.setNegativeButton(getString(R.string.cancelar),null)
+
+                meuBuilder.setPositiveButton(getString(R.string.sim),object: DialogInterface.OnClickListener{
+                    override fun onClick(dialog: DialogInterface?, which: Int) {
+                        val meuBuilder2:MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
+
+                        val v2:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
+                        meuBuilder2.setView(v2)
+                        v2.date_edit_text.setKeyListener(null);
+                        val teste= DatePicker(context)
+                        teste.setMaxDate(Date().time)
+                        teste.minDate= Date(1900,1,0).time
+
+
+                        val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                            myCalendar.set(Calendar.YEAR, year)
+                            myCalendar.set(Calendar.MONTH, monthOfYear)
+                            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                            updateLabel(v2)
+                        }
+
+                        v2.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { v, hasFocus ->
+                            if(v.isFocused==true){
+                                DatePickerDialog(context!!, date, myCalendar
+                                    .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                                    myCalendar.get(Calendar.DAY_OF_MONTH)).show()
+                                try{
+                                    hideKeyboard(activity!!,v)
+                                }catch(t:Throwable){
+                                    t.printStackTrace()
+                                }catch(e:Exception){
+                                    e.printStackTrace()}
+                            }
+                        })
+
+
+                        meuBuilder2.setCancelable(true)
+
+                        meuBuilder2.setPositiveButton("Modificar",null
+
+                        )
+                        val meuAlert = meuBuilder2.create()
+
+
+                        meuAlert.show()
+
+                        meuAlert.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
+                            var nome = v2.nome_edit_text
+                            var data = v2.date_edit_text
+                            if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
+                                val dbHandler = DBHelper(context!!, null)
+                                val aluno =
+                                    Aluno(nome.text.toString(), data.text.toString())
+                                try {
+                                    val updateSucessfull: Boolean = dbHandler.updateAluno(nome.text.toString(),data.text.toString(),aluno.matricula)
+                                    if (updateSucessfull == true) {
+
+                                        //informa que o usuário foi adicionado corretamente
+                                        Toast.makeText(
+                                            context!!,
+                                            nome.text.toString() + " foi modificado no database",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        //atualiza o texto do aluno
+
+
+                                        view.alunoCard.txt_nome.text = aluno.nome
+                                        view.alunoCard.txt_data.text = aluno.data
+                                    } else {
+                                        Toast.makeText(context!!, "Aluno já existente!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context,updateSucessfull.toString(),Toast.LENGTH_SHORT).show()
+                                    }
+
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                } catch (t: Throwable) {
+                                    t.printStackTrace()
+                                } finally {
+                                    dbHandler.close()
+                                    meuAlert.dismiss()
+                                }
+                            }else{
+                                Toast.makeText(context,"Valores invalidos",Toast.LENGTH_SHORT).show()
+                            }
+                        })
+
+
+                    }
+
+                })
+                meuBuilder.create().show()
+            }
+        })
+
+
+
+
+
+
         mRecycler= view.myNotaRecycler
         // Set the adapter
             with(mRecycler) {
@@ -245,11 +362,24 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
         return view
     }
 
+    //função para edição do editText Calendário
+    fun updateLabel(v:View) {
+        val myFormat:String = "dd/MM/yy";//In which you need put here
+        val sdf: SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH)
+
+        v.date_edit_text.setText(sdf.format(myCalendar.getTime()))
+    }
+    //função para esconder o teclado na hora de selecionar a data
+    fun hideKeyboard( context:Context,v: View) {
+        val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(v.getRootView()!!.getWindowToken(), 0)
+    }
+
 
     fun initSelectionTracker(savedInstanceState: Bundle?){
 
         selectionTracker = SelectionTracker.Builder<Long>(
-            "id-unico-do-objeto-de-selecao",
+            "my-selection-tracker-id",
             mRecycler,
             myItemKeyProvider(notas),
             DetailsLookup( mRecycler ),
@@ -278,10 +408,6 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                         actionMode!!.finish()
                         actionMode = null
                     } else {
-                    }
-                    val itemIterable: Iterator<Long> = selectionTracker.getSelection().iterator();
-                    while (itemIterable.hasNext()) {
-                        Log.i("Item Iterable: ", itemIterable.next().toString());
                     }
                 }
 
