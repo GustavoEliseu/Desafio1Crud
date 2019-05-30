@@ -125,7 +125,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 dbHandler.close()
                 mAdapter = MyAlunoRecyclerViewAdapter(alunos, listener, context)
                 mRecycler.setAdapter(mAdapter)
-                mAdapter!!.notifyDataSetChanged()
+                mAdapter.notifyDataSetChanged()
             }
 
 
@@ -172,28 +172,25 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 }
                 val meuBuilder:MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
 
-                val v:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
-                meuBuilder.setView(v)
-                v.date_edit_text.setKeyListener(null);
-                val teste= DatePicker(context)
-                teste.setMaxDate(Date().time)
-                teste.minDate=Date(1900,1,0).time
+                val myDialogAddView:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
+                meuBuilder.setView(myDialogAddView)
+                myDialogAddView.date_edit_text.setKeyListener(null);
 
 
                 val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
                     myCalendar.set(Calendar.YEAR, year)
                     myCalendar.set(Calendar.MONTH, monthOfYear)
                     myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                    updateLabel(v)
+                    updateLabel(myDialogAddView)
                 }
 
-                v.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { v, hasFocus ->
-                    if(v.isFocused==true){
+                myDialogAddView.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { innerView, hasFocus ->
+                    if(innerView.isFocused==true){
                         DatePickerDialog(context!!, date, myCalendar
                             .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                             myCalendar.get(Calendar.DAY_OF_MONTH)).show()
                         try{
-                            hideKeyboard(activity!!,v)
+                            hideKeyboard(activity!!,innerView)
                         }catch(t:Throwable){
                             t.printStackTrace()
                         }catch(e:Exception){
@@ -212,8 +209,8 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 meuAlert.show()
 
                 meuAlert.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
-                    var nome = v.nome_edit_text
-                    var data = v.date_edit_text
+                    var nome = myDialogAddView.nome_edit_text
+                    var data = myDialogAddView.date_edit_text
                     if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
                         val dbHandler = DBHelper(context!!, null)
                         val aluno =
@@ -223,7 +220,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                             if (myLong != -1L) {
                                 val cursor: Cursor? = dbHandler.getLastInsert()
                                 cursor!!.moveToFirst()
-                                val mat:Long =cursor?.getLong(cursor.getColumnIndex(DBHelper.COLUNA_MATRICULA))
+                                val mat:Long =cursor.getLong(cursor.getColumnIndex(DBHelper.COLUNA_MATRICULA))
                                 aluno.matricula = mat.toInt()
                                 alunos.add(aluno)
                                 //informa que o usuário foi adicionado corretamente

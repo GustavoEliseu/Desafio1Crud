@@ -103,11 +103,13 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         val cv:ContentValues = ContentValues()
         cv.put(COLUNA_NOME,nome)
         cv.put(COLUNA_DATA,data)
-
-//      Aluno(nome.text.toString(), data.text.toString())
-//      val updateSucessfull: Boolean = dbHandler.updateAluno(aluno.nome,aluno.data,aluno.matricula)
-//      "CREATE TABLE IF NOT EXISTS $TABLE_ALUNOS ($COLUNA_MATRICULA INTEGER PRIMARY KEY AUTOINCREMENT, $COLUNA_NOME TEXT NOT NULL, $COLUNA_DATA TEXT , UNIQUE ($COLUNA_NOME , $COLUNA_DATA));"
-        return db.update(TABLE_ALUNOS,cv, COLUNA_MATRICULA+" = ? ",arrayOf(matricula.toString()))>0
+        var result:Boolean = false
+        try{
+               result =db.update(TABLE_ALUNOS,cv, COLUNA_MATRICULA+" = ? ",arrayOf(matricula.toString()))>0
+        }catch(e:Exception){
+            result = false
+        }
+        return result
     }
 
     //Seleciona o ultimo AUTOINCREMENT adicionado na tabela Alunos
@@ -143,6 +145,23 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         val db= this.writableDatabase
         val args:Array<String> = arrayOf(id.toString(),matricula.toString())
         return db.delete(TABLE_NOTAS,"ROWID=? and $COLUNA_MATRICULA =? ",args )>0
+    }
+
+    fun deleteAllNotas(matricula:Int){
+        val db= this.writableDatabase
+        val args:Array<String> = arrayOf(matricula.toString())
+        db.delete(TABLE_NOTAS,"$COLUNA_MATRICULA =? ",args )>0
+    }
+
+    fun deleteAluno(matricula:Int):Boolean{
+        val db= this.writableDatabase
+        var alunoDeletado:Boolean=false
+        val args:Array<String> = arrayOf(matricula.toString())
+        alunoDeletado= db.delete(TABLE_ALUNOS,"$COLUNA_MATRICULA =? ",args)>0
+        if(alunoDeletado==true){
+            deleteAllNotas(matricula)
+        }
+        return alunoDeletado
     }
 
     //função que seleciona todos os launos para preencher a lista

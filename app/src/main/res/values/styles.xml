@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/design_default_color_primary_dark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorSurface">@color/colorSurface</item>
+
         <!-- enable window actionmode Overlay-->
         <item name="android:windowActionModeOverlay">true</item>
         <!-- enable window content transitions -->

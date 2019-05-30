@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--TODO - Preparar os valores para responsividade-->
-    <dimen name="text_margin">16dp</dimen>
+    <dimen name="_16dp">16dp</dimen>
+    <dimen name="_12dp">12dp</dimen>
 </resources>

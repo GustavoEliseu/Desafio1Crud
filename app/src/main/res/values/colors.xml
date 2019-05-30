@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#6B28FF</color>
-    <color name="colorPrimaryDark">#6B28FF</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimaryDark">#5C1AF8</color>
+    <color name="colorAccent">#56CBF9</color>
     <color name="background">#DFDFDF</color>
     <color name="colorSurface">#FFFFFF</color>
-    <color name="title_dialog">#2897FF</color>
+    <color name="title_dialog">#5C1AF8</color>
 </resources>
+<!--COLOR SCHEME BASICO DE CINCO CORES UTILIZADOS
+
+    #5C1AF8 - HAN PURPLE
+    #6B28FF - ELETRIC INDIGO
+    #FFC4EB - CLASSIC ROSE
+    #DFDFDF - GAINSBORO
+    #FFFFFF - WHITE
+
+-->

@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.selection.Selection
 import androidx.recyclerview.selection.SelectionTracker
@@ -23,6 +24,7 @@ import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gustavo.desafio1crud.Adapters.MyNotaRecyclerViewAdapter
 import com.gustavo.desafio1crud.Adapters.NotaRecyclerSelection.DetailsLookup
@@ -63,8 +65,6 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
     }
 
     override fun onActionItemClicked(actionMode: ActionMode, menuItem: MenuItem): Boolean {
-        val DBHandler:DBHelper=  DBHelper(context!!, null)
-        val iterator:Iterator<Long> =selectionTracker.selection.iterator()
         when(menuItem.itemId){
             R.id.delete_item->
 
@@ -146,7 +146,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                             notas.add(nota)
                         Toast.makeText(context!!, materia.text.toString()+ " foi adicionado ao database", Toast.LENGTH_LONG).show()
 
-                            mAdapter!!.notifyItemInserted(notas.size-1)
+                            mAdapter.notifyItemInserted(notas.size-1)
                         }catch(e:Exception){
                             e.printStackTrace()
                         }
@@ -206,8 +206,11 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
         view.alunoCard.txt_nome.text = aluno.nome
         view.alunoCard.txt_data.text = aluno.data
         view.alunoCard.aluno_matricula.text = aluno.matricula.toString()
+        val editAluno:MaterialButton =view.alunoCard.delete_aluno_btn
+        //Modifica o icone de Delete para o icone de Edit/
+        editAluno.icon = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_edit_black, null);
 
-        view.alunoCard.setOnClickListener(object: View.OnClickListener {
+        editAluno.setOnClickListener(object: View.OnClickListener {
             override fun onClick(v:View){
                 selectionTracker.clearSelection()
                 val meuBuilder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
@@ -223,9 +226,6 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                         val v2:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
                         meuBuilder2.setView(v2)
                         v2.date_edit_text.setKeyListener(null);
-                        val teste= DatePicker(context)
-                        teste.setMaxDate(Date().time)
-                        teste.minDate= Date(1900,1,0).time
 
 
                         val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
@@ -366,7 +366,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                 mAdapter=MyNotaRecyclerViewAdapter(notas, listener)
                 mAdapter.setHasStableIds(true)
                 mRecycler.setAdapter(mAdapter)
-                mAdapter!!.notifyDataSetChanged()
+                mAdapter.notifyDataSetChanged()
             }
         (activity as MainActivity).FAB_add.setOnClickListener(this)
         retainInstance = true
