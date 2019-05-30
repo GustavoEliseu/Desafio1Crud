@@ -46,8 +46,8 @@ import kotlin.collections.ArrayList
  * Activities containing this fragment MUST implement the
  * [NotaFragment.OnListFragmentInteractionListener] interface.
  */
-//TODO -- IMPLEMENTAR ONCLICK E DIALOG PARA EDITAR NOME DO ALUNO
-//TODO -- Implementar corretamente o savedStates do NotaFragment
+
+
 class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
     val myCalendar:Calendar = Calendar.getInstance();
@@ -102,6 +102,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
     override fun onDestroyActionMode(actionMode: ActionMode) {
         selectionTracker.clearSelection()
+        isInActionMode=false
     }
 
     lateinit var selectionTracker: SelectionTracker<Long>
@@ -169,6 +170,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
     lateinit var mAdapter:MyNotaRecyclerViewAdapter
     private lateinit var aluno: Aluno
     private var notas:ArrayList<Nota> = ArrayList<Nota>()
+    private var isInActionMode:Boolean = false
 
     private var listener: OnListFragmentInteractionListener? = null
     constructor(aluno: Aluno):this(){
@@ -190,8 +192,10 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
     }
 
     override fun onSaveInstanceState( outState: Bundle ) {
-        super.onSaveInstanceState( outState )
-        selectionTracker.onSaveInstanceState( outState )
+        super.onSaveInstanceState(outState)
+        selectionTracker.onSaveInstanceState(outState)
+
+        outState.putBoolean("ActionMode", isInActionMode);
     }
 
     override fun onCreateView(
@@ -260,10 +264,10 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                             var data = v2.date_edit_text
                             if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
                                 val dbHandler = DBHelper(context!!, null)
-                                val aluno =
+                                val mAluno =
                                     Aluno(nome.text.toString(), data.text.toString())
                                 try {
-                                    val updateSucessfull: Boolean = dbHandler.updateAluno(nome.text.toString(),data.text.toString(),aluno.matricula)
+                                    val updateSucessfull: Boolean = dbHandler.updateAluno(nome.text.toString(), data.text.toString(),aluno.matricula)
                                     if (updateSucessfull == true) {
 
                                         //informa que o usuário foi adicionado corretamente
@@ -272,14 +276,14 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                                             nome.text.toString() + " foi modificado no database",
                                             Toast.LENGTH_LONG
                                         ).show()
+
+                                        aluno.data = mAluno.data
+                                        aluno.nome = mAluno.nome
                                         //atualiza o texto do aluno
-
-
-                                        view.alunoCard.txt_nome.text = aluno.nome
-                                        view.alunoCard.txt_data.text = aluno.data
+                                        view.alunoCard.txt_nome.text = mAluno.nome
+                                        view.alunoCard.txt_data.text = mAluno.data
                                     } else {
-                                        Toast.makeText(context!!, "Aluno já existente!", Toast.LENGTH_SHORT).show()
-                                        Toast.makeText(context,updateSucessfull.toString(),Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context!!, "Valor invalido ou Aluno já existente!", Toast.LENGTH_SHORT).show()
                                     }
 
                                 } catch (e: Exception) {
@@ -315,28 +319,33 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
+
                 val dbHandler = DBHelper(activity!!, null)
+                if(notas.size<=0){
                 val cursor = dbHandler.getAllNotasAluno(aluno.matricula)
-                try{
+                try {
 
                     cursor!!.moveToFirst()
 
 
-                    notas.add(0, Nota(
-                        aluno,
-                        cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_MATERIA)),
-                        cursor.getInt(cursor.getColumnIndex(DBHelper.COLUNA_NOTA)),
-                        cursor.getLong(cursor.getColumnIndex("rowid"))
-                    ))
-
-
-                    while (cursor.moveToNext()) {
-                        notas.add(cursor.position, Nota(
+                    notas.add(
+                        0, Nota(
                             aluno,
                             cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_MATERIA)),
                             cursor.getInt(cursor.getColumnIndex(DBHelper.COLUNA_NOTA)),
                             cursor.getLong(cursor.getColumnIndex("rowid"))
                         )
+                    )
+
+
+                    while (cursor.moveToNext()) {
+                        notas.add(
+                            cursor.position, Nota(
+                                aluno,
+                                cursor.getString(cursor.getColumnIndex(DBHelper.COLUNA_MATERIA)),
+                                cursor.getInt(cursor.getColumnIndex(DBHelper.COLUNA_NOTA)),
+                                cursor.getLong(cursor.getColumnIndex("rowid"))
+                            )
                         )
                     }
                     cursor.close()
@@ -350,6 +359,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                 }finally {
                     if (cursor != null && !cursor.isClosed())
                         cursor.close();
+                }
                 }
                 dbHandler.close()
                 mAdapter=MyNotaRecyclerViewAdapter(notas, listener)
@@ -376,24 +386,26 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
     }
 
 
-    fun initSelectionTracker(savedInstanceState: Bundle?){
+    fun initSelectionTracker(savedInstanceState: Bundle?) {
+
 
         selectionTracker = SelectionTracker.Builder<Long>(
             "my-selection-tracker-id",
             mRecycler,
             myItemKeyProvider(notas),
-            DetailsLookup( mRecycler ),
+            DetailsLookup(mRecycler),
             StorageStrategy.createLongStorage()
         )
             .build()
 
         selectionTracker.addObserver(
-            object : SelectionTracker.SelectionObserver<Long>(){
+            object : SelectionTracker.SelectionObserver<Long>() {
 
                 override fun onItemStateChanged(
                     key: Long,
-                    selected: Boolean ) {
-                    super.onItemStateChanged( key, selected )
+                    selected: Boolean
+                ) {
+                    super.onItemStateChanged(key, selected)
 
                 }
 
@@ -403,10 +415,11 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                         actionMode = (activity as AppCompatActivity).startSupportActionMode(
                             this@NotaFragment
                         )
-
+                        isInActionMode = true
                     } else if (!selectionTracker.hasSelection() && actionMode != null) {
                         actionMode!!.finish()
                         actionMode = null
+                        isInActionMode = false
                     } else {
                     }
                 }
@@ -418,13 +431,20 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                 override fun onSelectionRestored() {
                     super.onSelectionRestored()
                 }
+
             }
         )
-        (mAdapter as MyNotaRecyclerViewAdapter).selectionTracker = selectionTracker
 
-        if( savedInstanceState != null ){
+
+        if (savedInstanceState != null) {
+            if(savedInstanceState.getBoolean("ActionMode", false)){
+                actionMode = (activity as AppCompatActivity).startSupportActionMode(
+                this@NotaFragment
+                )
+            }
             selectionTracker.onRestoreInstanceState( savedInstanceState )
         }
+        (mAdapter as MyNotaRecyclerViewAdapter).selectionTracker = selectionTracker
     }
 
     override fun onAttach(context: Context) {

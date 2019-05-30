@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.concurrent.schedule
 //TODO -- Corrigir comentários da aplicação
-//TODO -- Implementar corretamente o savedStates do selection do NotaFragment
 //TODO -- Implementar uma transição mais leve entre os fragments
 class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteractionListener,
     NotaFragment.OnListFragmentInteractionListener {

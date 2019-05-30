@@ -38,6 +38,9 @@ import kotlin.collections.ArrayList
  * Activities containing this fragment MUST implement the
  * [AlunoFragment.OnListFragmentInteractionListener] interface.
  */
+//TODO - Implementar uma Busca complexa por nome de aluno (com animações da lista)
+//TODO - Perguntar se posso modificar o Crud, para acrescentar 1 variavel boolean de aluno ativo ou não. Para que possa 'deletar' alunos sem retira-los do sistema
+
 class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
 
     private var columnCount = 1

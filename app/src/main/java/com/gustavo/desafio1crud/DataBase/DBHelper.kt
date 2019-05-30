@@ -10,7 +10,7 @@ import com.gustavo.desafio1crud.MyDataClasses.Aluno
 import com.gustavo.desafio1crud.MyDataClasses.Nota
 import com.gustavo.desafio1crud.R
 
-
+//TODO - CORRIGIR UPDATE PARA FUNCIONAR CORRETMENTE
 class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : SQLiteOpenHelper(context,
     DATABASE_NAME, null,
     DATABASE_VERSION
@@ -104,7 +104,9 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         cv.put(COLUNA_NOME,nome)
         cv.put(COLUNA_DATA,data)
 
-
+//      Aluno(nome.text.toString(), data.text.toString())
+//      val updateSucessfull: Boolean = dbHandler.updateAluno(aluno.nome,aluno.data,aluno.matricula)
+//      "CREATE TABLE IF NOT EXISTS $TABLE_ALUNOS ($COLUNA_MATRICULA INTEGER PRIMARY KEY AUTOINCREMENT, $COLUNA_NOME TEXT NOT NULL, $COLUNA_DATA TEXT , UNIQUE ($COLUNA_NOME , $COLUNA_DATA));"
         return db.update(TABLE_ALUNOS,cv, COLUNA_MATRICULA+" = ? ",arrayOf(matricula.toString()))>0
     }
 
