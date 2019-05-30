@@ -37,3 +37,5 @@ Deveria ter implementado o onBackPressed nos fragments em sí, neste caso especi
 
 
 TODO - Se eu conseguir temmpo ainda hoje, acrescentarei uma busca utilizando o arrayList de alunos, e colocarei o botão de busca na actionBar
+
+TODO- Testar responsividade e como está a usabilidade do aplicativo, pois estou sem emulador e apenas com um moto g4(modelo tem problemas com ghost touch)
