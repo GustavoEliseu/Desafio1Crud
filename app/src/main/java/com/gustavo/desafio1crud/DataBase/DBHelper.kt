@@ -113,7 +113,8 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
     //Seleciona o ultimo AUTOINCREMENT adicionado na tabela Alunos
     fun getLastInsert():Cursor?{
         val db = this.readableDatabase
-        return db.rawQuery("SELECT seq from sqlite_sequence WHERE lower(name)='$TABLE_ALUNOS'",null)
+        return db.query(TABLE_ALUNOS,  arrayOf(COLUNA_MATRICULA), null, null, null, null, COLUNA_MATRICULA+" DESC");
+        //return db.rawQuery("SELECT $COLUNA_MATRICULA FROM $TABLE_ALUNOS ORDER BY DESC LIMIT 1 ",null)
     }
 
     //FUNÇÃO TESTE, adiciona notas para os alunos gerados automaticamente

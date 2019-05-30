@@ -209,6 +209,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
         view.alunoCard.setOnClickListener(object: View.OnClickListener {
             override fun onClick(v:View){
+                selectionTracker.clearSelection()
                 val meuBuilder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
                     .setTitle(getString(R.string.mudar_nome))
                     .setCancelable(true)
@@ -374,7 +375,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
     //função para edição do editText Calendário
     fun updateLabel(v:View) {
-        val myFormat:String = "dd/MM/yy";//In which you need put here
+        val myFormat:String = "dd/MM/yyyy";//In which you need put here
         val sdf: SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH)
 
         v.date_edit_text.setText(sdf.format(myCalendar.getTime()))

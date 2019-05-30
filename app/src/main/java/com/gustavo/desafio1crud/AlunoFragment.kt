@@ -7,6 +7,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -134,7 +135,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
         }
 
     fun updateLabel(v:View) {
-        val myFormat:String = "dd/MM/yy";//In which you need put here
+        val myFormat:String = "dd/MM/yyyy";//In which you need put here
         val sdf:SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH)
 
         v.date_edit_text.setText(sdf.format(myCalendar.getTime()))
@@ -221,15 +222,14 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                             val myLong: Long = dbHandler.addAluno(aluno)
                             if (myLong != -1L) {
                                 val cursor: Cursor? = dbHandler.getLastInsert()
-                                cursor!!.moveToLast()
-                                val mat:Int =cursor!!.getInt(cursor.getColumnIndex("seq"))
-                                aluno.matricula = mat
+                                cursor!!.moveToFirst()
+                                val mat:Long =cursor?.getLong(cursor.getColumnIndex(DBHelper.COLUNA_MATRICULA))
+                                aluno.matricula = mat.toInt()
                                 alunos.add(aluno)
-
                                 //informa que o usuário foi adicionado corretamente
                                 Toast.makeText(
                                     context!!,
-                                    nome.text.toString() + " foi adicionado ao database",
+                                    nome.text.toString() + " foi adicionado ao database com a matricula: "+ aluno.matricula.toString(),
                                     Toast.LENGTH_LONG
                                 ).show()
                                 //atualiza o
@@ -238,7 +238,6 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                             } else {
                                 mRecycler.adapter!!.notifyItemInserted(alunos.size)
                                 Toast.makeText(context!!, "Aluno já existente!", Toast.LENGTH_SHORT).show()
-                                Toast.makeText(context,myLong.toString(),Toast.LENGTH_SHORT).show()
                             }
 
                         } catch (e: Exception) {
