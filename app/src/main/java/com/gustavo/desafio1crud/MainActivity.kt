@@ -32,11 +32,8 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
                     meuFragNota.returnTransition = null
                 }
                 val myFragTrans = myFragManager.beginTransaction()
-
                 meuFragNota.setRetainInstance(true)
-
                 myFragTrans.replace(R.id.myFrag, meuFragNota, "Nota")
-
                 myFragTrans.commit()
             }
     }
@@ -59,7 +56,6 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
     override fun onStart(){
         super.onStart()
         //val myDBHelper:DBHelper= DBHelper(this,null)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             meuFragAluno.exitTransition = Explode()
         }
