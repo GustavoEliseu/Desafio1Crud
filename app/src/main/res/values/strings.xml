@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Desafio 1 Crud</string>
+    <string name="app_name">Alunos e Notas</string>
     <string name="nome">Nome:</string>
     <string name="nota">Valor da nota:</string>
     <string name="materia">Matéria:</string>

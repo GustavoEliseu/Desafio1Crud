@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_ANONYMOUS_PARAMETER")
+
 package com.gustavo.desafio1crud
 
 import android.app.Activity
@@ -54,56 +56,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
     val myCalendar:Calendar = Calendar.getInstance();
 
-    override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean {
-        val inflater = actionMode.menuInflater
-        inflater.inflate(R.menu.selected_menu, menu)
-        return true
-    }
 
-    override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu): Boolean {
-        return false
-    }
-
-    override fun onActionItemClicked(actionMode: ActionMode, menuItem: MenuItem): Boolean {
-        when(menuItem.itemId){
-            R.id.delete_item->
-
-            if(context!=null){
-                val mSelection: Selection<Long> = selectionTracker.selection
-                val dbHandler = DBHelper(context!!,null)
-                val arrayRmv = IntArray(selectionTracker.selection.size())
-                var i:Int = 0
-                while(i<mSelection.size()){
-                    arrayRmv[i] = notas.indexOf(
-                        notas.filter{
-                                nota -> nota.id == mSelection.elementAt(i)
-                        }.single())
-                    val x:Boolean = dbHandler.deleteNota(notas.get(arrayRmv[i]).id,notas.get(arrayRmv[i]).aluno.matricula)
-                    if(x==true) {
-                        i++
-                    }
-                }
-                selectionTracker.clearSelection()
-                while(i>0) {
-                    i--
-                    notas.remove(notas.get( arrayRmv[i]))
-
-                    //Necessário, pois NotifyItemRemoved estava causando crashs quando selecionava outra nota, provavelmente devido a como o ID é gerado. Verificar!!
-                    mAdapter.notifyDataSetChanged()
-
-                }
-                dbHandler.close()
-
-            }
-
-        }
-        return true
-    }
-
-    override fun onDestroyActionMode(actionMode: ActionMode) {
-        selectionTracker.clearSelection()
-        isInActionMode=false
-    }
 
     lateinit var selectionTracker: SelectionTracker<Long>
     var actionMode: ActionMode? = null
@@ -202,14 +155,18 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         val view = inflater.inflate(R.layout.fragment_nota_list, container, false)
+
         view.alunoCard.txt_nome.text = aluno.nome
         view.alunoCard.txt_data.text = aluno.data
         view.alunoCard.aluno_matricula.text = aluno.matricula.toString()
+
         val editAluno:MaterialButton =view.alunoCard.delete_aluno_btn
+
         //Modifica o icone de Delete para o icone de Edit/
         editAluno.icon = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_edit_black, null);
-
+        //Inicio OnClick do botão edit
         editAluno.setOnClickListener(object: View.OnClickListener {
             override fun onClick(v:View){
                 selectionTracker.clearSelection()
@@ -218,51 +175,65 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                     .setCancelable(true)
                     .setMessage(getString(R.string.deseja_edit))
                 meuBuilder.setNegativeButton(getString(R.string.cancelar),null)
-
+                //Caso o usuário concorde, o popup de edição do aluno é gerado, este é quase igual ao da tela aluno
                 meuBuilder.setPositiveButton(getString(R.string.sim),object: DialogInterface.OnClickListener{
                     override fun onClick(dialog: DialogInterface?, which: Int) {
                         val meuBuilder2:MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
 
-                        val v2:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
-                        meuBuilder2.setView(v2)
-                        v2.date_edit_text.setKeyListener(null);
+                        val viewDialogEditAluno:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
+                        meuBuilder2.setView(viewDialogEditAluno)
+                        viewDialogEditAluno.date_edit_text.setKeyListener(null);
 
+                        //Iniciando dos valores básicos para os do aluno
+                        updateCalendarioAluno()
+                        viewDialogEditAluno.date_edit_text.setText(aluno.data)
+                        viewDialogEditAluno.nome_edit_text.setText(aluno.nome)
 
+                        //caso edit seja clicado o texto desaparecerá
+                        viewDialogEditAluno.nome_edit_text.setOnClickListener(View.OnClickListener {
+                            viewDialogEditAluno.nome_edit_text.setText("")
+                        })
+
+                        //Listenner do datePicker
                         val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-                            myCalendar.set(Calendar.YEAR, year)
-                            myCalendar.set(Calendar.MONTH, monthOfYear)
-                            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                            updateLabel(v2)
+                            val simpledateformat = SimpleDateFormat("dd/mm/yyyy", Locale.ENGLISH)
+                            updateLabel(viewDialogEditAluno)
                         }
 
-                        v2.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { v, hasFocus ->
-                            if(v.isFocused==true){
-                                DatePickerDialog(context!!, date, myCalendar
-                                    .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-                                    myCalendar.get(Calendar.DAY_OF_MONTH)).show()
-                                try{
-                                    hideKeyboard(activity!!,v)
-                                }catch(t:Throwable){
-                                    t.printStackTrace()
-                                }catch(e:Exception){
-                                    e.printStackTrace()}
+                        //quando date_edit é clicado se cria o DatePickerDialog
+                        viewDialogEditAluno.date_edit_text.setOnClickListener(object: View.OnClickListener {
+                            override fun onClick(v:View){
+                                    DatePickerDialog(context!!, date, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                                        myCalendar.get(Calendar.DAY_OF_MONTH)).show()
+                                    try{
+                                        hideKeyboard(activity!!,v)
+                                    }catch(t:Throwable){
+                                        t.printStackTrace()
+                                    }catch(e:Exception){
+                                        e.printStackTrace()}
+                        }
+                        })
+
+                        // Caso o date_edit receba o foco, efetuará o onClick automaticamente
+                        viewDialogEditAluno.date_edit_text.setOnFocusChangeListener(object: View.OnFocusChangeListener{
+                            override fun onFocusChange(v: View?, hasFocus: Boolean) {
+                                if(hasFocus==true){v?.performClick()}
                             }
                         })
 
 
                         meuBuilder2.setCancelable(true)
 
-                        meuBuilder2.setPositiveButton("Modificar",null
-
-                        )
+                        //se inicializa o positive button como nulo
+                        meuBuilder2.setPositiveButton("Modificar",null)
                         val meuAlert = meuBuilder2.create()
 
 
                         meuAlert.show()
-
+                        //se sobscreve o onClick do positive button, para só aceitar caso o valor seja válido(evitar nulo e vazio no database)
                         meuAlert.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
-                            var nome = v2.nome_edit_text
-                            var data = v2.date_edit_text
+                            var nome = viewDialogEditAluno.nome_edit_text
+                            var data = viewDialogEditAluno.date_edit_text
                             if(!nome.text!!.isEmpty()||!data.text!!.isEmpty()) {
                                 val dbHandler = DBHelper(context!!, null)
                                 val mAluno =
@@ -312,9 +283,9 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
 
 
 
-
+        //inicializa o recyclerview
         mRecycler= view.myNotaRecycler
-        // Set the adapter
+        // prepara o adapter
             with(mRecycler) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
@@ -324,6 +295,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                 val dbHandler = DBHelper(activity!!, null)
                 if(notas.size<=0){
                 val cursor = dbHandler.getAllNotasAluno(aluno.matricula)
+                    //Tenta pegar a lista de notas do aluno
                 try {
 
                     cursor!!.moveToFirst()
@@ -361,16 +333,26 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                     if (cursor != null && !cursor.isClosed())
                         cursor.close();
                 }
+                    //Fim tentativa de pegar as notas do aluno
                 }
                 dbHandler.close()
                 mAdapter=MyNotaRecyclerViewAdapter(notas, listener)
                 mAdapter.setHasStableIds(true)
                 mRecycler.setAdapter(mAdapter)
                 mAdapter.notifyDataSetChanged()
-            }
+            }//fim inicialização do adapter
+
         (activity as MainActivity).FAB_add.setOnClickListener(this)
         retainInstance = true
         return view
+    }
+
+    //função para se atualizar o calendário para a data do usuário
+    fun updateCalendarioAluno(){
+        val datas =aluno.data.split('/')
+        myCalendar.set(Calendar.YEAR,Integer.valueOf(datas[2]))
+        myCalendar.set(Calendar.MONTH,Integer.valueOf(datas[1])-1) //correção de data, pois Meses vão de 0 a 11 no Calendar
+        myCalendar.set(Calendar.DAY_OF_MONTH,Integer.valueOf(datas[0]))
     }
 
     //função para edição do editText Calendário
@@ -386,9 +368,8 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
         imm.hideSoftInputFromWindow(v.getRootView()!!.getWindowToken(), 0)
     }
 
-
+    //Inicializa o selectionTracker
     fun initSelectionTracker(savedInstanceState: Bundle?) {
-
 
         selectionTracker = SelectionTracker.Builder<Long>(
             "my-selection-tracker-id",
@@ -398,7 +379,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
             StorageStrategy.createLongStorage()
         )
             .build()
-
+        //Adiciona um ovservador ao selectionTracker
         selectionTracker.addObserver(
             object : SelectionTracker.SelectionObserver<Long>() {
 
@@ -409,7 +390,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
                     super.onItemStateChanged(key, selected)
 
                 }
-
+                //Lida com o actionMode de acordo com o fato de existir ou não itens selecionados
                 override fun onSelectionChanged() {
                     super.onSelectionChanged()
                     if (selectionTracker.hasSelection() && actionMode == null) {
@@ -436,7 +417,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
             }
         )
 
-
+        //caso exista savedInstance o estado anterior do selectionTracker é recuperado
         if (savedInstanceState != null) {
             if(savedInstanceState.getBoolean("ActionMode", false)){
                 actionMode = (activity as AppCompatActivity).startSupportActionMode(
@@ -445,9 +426,61 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
             }
             selectionTracker.onRestoreInstanceState( savedInstanceState )
         }
-        (mAdapter as MyNotaRecyclerViewAdapter).selectionTracker = selectionTracker
+        mAdapter.selectionTracker = selectionTracker
     }
 
+    override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+        val inflater = actionMode.menuInflater
+        inflater.inflate(R.menu.selected_menu, menu)
+        return true
+    }
+
+    override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+        return false
+    }
+    //
+    override fun onActionItemClicked(actionMode: ActionMode, menuItem: MenuItem): Boolean {
+        when(menuItem.itemId){
+            R.id.delete_item->
+
+                if(context!=null){
+                    val mSelection: Selection<Long> = selectionTracker.selection
+                    val dbHandler = DBHelper(context!!,null)
+                    val arrayRmv = IntArray(selectionTracker.selection.size())
+                    var i:Int = 0
+                    while(i<mSelection.size()){
+                        arrayRmv[i] = notas.indexOf(
+                            notas.filter{
+                                    nota -> nota.id == mSelection.elementAt(i)
+                            }.single())
+                        val x:Boolean = dbHandler.deleteNota(notas.get(arrayRmv[i]).id,notas.get(arrayRmv[i]).aluno.matricula)
+                        if(x==true) {
+                            i++
+                        }
+                    }
+                    selectionTracker.clearSelection()
+                    while(i>0) {
+                        i--
+                        notas.remove(notas.get( arrayRmv[i]))
+
+                        mAdapter.notifyItemRemoved(arrayRmv[i])
+                        mAdapter.notifyItemRangeChanged(arrayRmv[i],mAdapter.itemCount-arrayRmv[i])
+
+                    }
+                    dbHandler.close()
+
+                }
+
+        }
+        return true
+    }
+    //Limpa o selectionTracker e remove o ActionMode
+    override fun onDestroyActionMode(actionMode: ActionMode) {
+        selectionTracker.clearSelection()
+        isInActionMode=false
+    }
+
+//onAttach básico criado com o fragment
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnListFragmentInteractionListener) {
@@ -456,7 +489,7 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
             throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
         }
     }
-
+    //onDetach básico criado com o fragment
     override fun onDetach() {
         super.onDetach()
         listener = null
@@ -473,13 +506,13 @@ class NotaFragment() : Fragment(),View.OnClickListener,ActionMode.Callback {
      * [Communicating with Other Fragments](http://developer.android.com/training/basics/fragments/communicating.html)
      * for more information.
      */
+    //interface para comunicação com o Main Activity
     interface OnListFragmentInteractionListener {
 
         fun onListFragmentInteraction(item: Nota)
     }
 
     companion object {
-
 
         const val ARG_COLUMN_COUNT = "column-count"
 

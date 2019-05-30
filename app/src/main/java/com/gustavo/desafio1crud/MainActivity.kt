@@ -24,8 +24,8 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
 
     //FragmentAluno Interaction e cliques
     override fun onListFragmentInteraction(item: Aluno?) {
+            //Verifica qual aluno foi clicado e se efetua a troca de atividades
             if (item != null) {
-                (myFragManager.fragments[0] as AlunoFragment).mSelectionTracker?.clearSelection()
                 meuFragNota = NotaFragment(item)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     meuFragNota.enterTransition = android.transition.Fade()
@@ -73,6 +73,7 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
     override fun onBackPressed() {
         var myFragment:Fragment? = null
         var controleBackPressed:Boolean = false
+        //Caso nota não seja vazio, verifica se hà seleção ou não
         if(myFragManager.findFragmentByTag("Nota")!=null){
             if ((myFragManager.fragments[0] as NotaFragment).selectionTracker.hasSelection()) {
                 (myFragManager.fragments[0] as NotaFragment).selectionTracker.clearSelection();
@@ -81,6 +82,7 @@ class MainActivity() : AppCompatActivity(), AlunoFragment.OnListFragmentInteract
                 controleBackPressed= true
             }
         }
+        //caso o fragment seja nota sem seleção, voltará para a tela anterior, caso não seja o fragment nota a aplicação será minimizada
         if (myFragment != null && myFragment.isVisible()) {
             myFragManager.beginTransaction().replace(R.id.myFrag,meuFragAluno,"Aluno").commit()
         }else{

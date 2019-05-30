@@ -28,7 +28,7 @@
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nome_edit_text"
                 android:background="@color/design_default_color_background"
-
+                android:inputType="textPersonName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -39,18 +39,18 @@
             android:layout_height="wrap_content" android:id="@+id/textView2" android:textSize="18sp"/>
 
     <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/date_text_input"
-            android:layout_width="match_parent"
-            android:clickable="true"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:hint="data">
+        android:id="@+id/date_text_input"
+        android:layout_width="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:hint="data">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/date_edit_text"
                 android:inputType="date"
                 android:background="@color/design_default_color_background"
-
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>

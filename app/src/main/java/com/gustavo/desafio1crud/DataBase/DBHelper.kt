@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package com.gustavo.desafio1crud.DataBase
 
 import android.content.ContentValues
@@ -27,10 +29,10 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
 
         val cursor:Cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_ALUNOS",null)
         cursor.moveToFirst()
-        if(cursor!=null && cursor.getInt(0)<=0){
+        if( cursor.getInt(0)<=0){
             startAlunoNota(db)
         }
-
+        cursor.close()
 
     }
 
@@ -41,17 +43,15 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
 
     //FUNÇÃO TESTE - para adicionar os alunos e as notas disponibilizadas nos string-arrays no string.xml
     fun startAlunoNota(db: SQLiteDatabase){
-        var x=0;
         val mArrayNome= context.resources.getStringArray(R.array.alunos_nomes)
         val mArrayData= context.resources.getStringArray(R.array.alunos_datas)
         val mArrayMateria= context.resources.getStringArray(R.array.notas_materia)
-        var myLong: Long
+        
         for(x in 0 until mArrayNome.size){
             val aluno: Aluno =
                 Aluno(mArrayNome[x], mArrayData[x], x)
             //checa se o usuário foi adicionado corretamente e adiciona as respectivas ntoas dele
             if(addAluno(aluno,db)>-1L){
-                var y= 0
                 for (y in 0 until mArrayMateria.size){
                     addNota(
                         Nota(
@@ -103,7 +103,7 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
         val cv:ContentValues = ContentValues()
         cv.put(COLUNA_NOME,nome)
         cv.put(COLUNA_DATA,data)
-        var result:Boolean = false
+        var result: Boolean
         try{
                result =db.update(TABLE_ALUNOS,cv, COLUNA_MATRICULA+" = ? ",arrayOf(matricula.toString()))>0
         }catch(e:Exception){
@@ -155,9 +155,8 @@ class DBHelper (val context: Context, factory: SQLiteDatabase.CursorFactory?) : 
 
     fun deleteAluno(matricula:Int):Boolean{
         val db= this.writableDatabase
-        var alunoDeletado:Boolean=false
         val args:Array<String> = arrayOf(matricula.toString())
-        alunoDeletado= db.delete(TABLE_ALUNOS,"$COLUNA_MATRICULA =? ",args)>0
+        val alunoDeletado= db.delete(TABLE_ALUNOS,"$COLUNA_MATRICULA =? ",args)>0
         if(alunoDeletado==true){
             deleteAllNotas(matricula)
         }

@@ -24,4 +24,13 @@
             @transition/change_image_transform</item>
     </style>
 
+
+    <style name="TimePickerTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/design_default_color_primary</item>
+        <item name="android:focusedMonthDateColor">@color/design_default_color_primary</item>
+        <item name="android:solidColor">@color/design_default_color_primary</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
 </resources>

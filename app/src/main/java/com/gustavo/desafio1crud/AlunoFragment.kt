@@ -1,11 +1,15 @@
+@file:Suppress("UNUSED_ANONYMOUS_PARAMETER")
+
 package com.gustavo.desafio1crud
 
 
 
 import android.app.Activity
+import android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 import android.app.DatePickerDialog
 import android.content.Context
 import android.database.Cursor
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -40,30 +44,26 @@ import kotlin.collections.ArrayList
  * [AlunoFragment.OnListFragmentInteractionListener] interface.
  */
 //TODO - Implementar uma Busca complexa por nome de aluno (com animações da lista)
-//TODO - Perguntar se posso modificar o Crud, para acrescentar 1 variavel boolean de aluno ativo ou não. Para que possa 'deletar' alunos sem retira-los do sistema
+
 
 class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
 
+    private var listener: OnListFragmentInteractionListener? = null
     private var columnCount = 1
-    val myCalendar:Calendar = Calendar.getInstance();
+
     lateinit var mAdapter: MyAlunoRecyclerViewAdapter
     lateinit var mRecycler:RecyclerView
     lateinit var alunos:ArrayList<Aluno>
-    var mSelectionTracker:SelectionTracker<Long>?=null
+
     var actionMode:ActionMode? = null
     var toolbar: ActionBar? = null
 
-    private var listener: OnListFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
-
-        if(savedInstanceState!=null){
-            mSelectionTracker?.onRestoreInstanceState(savedInstanceState)
         }
 
     }
@@ -83,6 +83,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
         mRecycler =view.mRVList
         alunos = ArrayList<Aluno>()
         toolbar= (activity as AppCompatActivity).supportActionBar
+        //Inicio configuração recycler
             with(mRecycler) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
@@ -90,6 +91,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 }
                 val dbHandler = DBHelper(activity!!, null)
                 val cursor = dbHandler.getAllAlunos()
+                //Inicio tentativa ler Banco de Dados
                 try{
 
                     cursor!!.moveToFirst()
@@ -115,18 +117,18 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 }catch(t:Throwable){
                     t.printStackTrace()
 
-                    Toast.makeText(context,"falhou",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,"Banco de dados Vazio",Toast.LENGTH_SHORT).show()
                 }catch (e:Exception){
                     e.printStackTrace()
                 }finally {
                     if (cursor != null && !cursor.isClosed())
                         cursor.close();
-                }
+                }// Fim Tentativa ler Banco de Dados
                 dbHandler.close()
                 mAdapter = MyAlunoRecyclerViewAdapter(alunos, listener, context)
                 mRecycler.setAdapter(mAdapter)
                 mAdapter.notifyDataSetChanged()
-            }
+            } //fim da configuração do Recycler
 
 
         (activity as MainActivity).FAB_add.setOnClickListener(this)
@@ -134,7 +136,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
         return view
         }
 
-    fun updateLabel(v:View) {
+    fun updateLabel(v:View,myCalendar:Calendar) {
         val myFormat:String = "dd/MM/yyyy";//In which you need put here
         val sdf:SimpleDateFormat = SimpleDateFormat(myFormat, Locale.ENGLISH)
 
@@ -167,34 +169,55 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
     override fun onClick(v: View?) {
         when(v?.id) {
             R.id.FAB_add ->{
-                if(mAdapter.mSelectionTracker!=null){
-                    mAdapter.mSelectionTracker!!.clearSelection()
-                }
+
+                val myCalendar:Calendar = Calendar.getInstance();
+
                 val meuBuilder:MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(context)
 
                 val myDialogAddView:View = layoutInflater.inflate(R.layout.dialog_add_aluno,null,false)
                 meuBuilder.setView(myDialogAddView)
+                //se impede a digitação no date_edit
                 myDialogAddView.date_edit_text.setKeyListener(null);
 
-
+                //Inicia o DatePicker com a data atual
                 val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
                     myCalendar.set(Calendar.YEAR, year)
                     myCalendar.set(Calendar.MONTH, monthOfYear)
                     myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                    updateLabel(myDialogAddView)
+                    updateLabel(myDialogAddView,myCalendar)
                 }
 
-                myDialogAddView.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { innerView, hasFocus ->
-                    if(innerView.isFocused==true){
-                        DatePickerDialog(context!!, date, myCalendar
-                            .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-                            myCalendar.get(Calendar.DAY_OF_MONTH)).show()
+              //Se esconde o teclado e inicia o DatePicker
+                myDialogAddView.date_edit_text.setOnClickListener(object: View.OnClickListener{
+                    override fun onClick(v: View) {
+
                         try{
-                            hideKeyboard(activity!!,innerView)
+                            hideKeyboard(activity!!,v)
                         }catch(t:Throwable){
                             t.printStackTrace()
                         }catch(e:Exception){
                             e.printStackTrace()}
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val datePickerDialog =DatePickerDialog(context!!, R.style.TimePickerTheme,date, myCalendar
+                                .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                                myCalendar.get(Calendar.DAY_OF_MONTH))
+                            datePickerDialog.create()
+                            //modifica a cor dos botões do dialog
+                            datePickerDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setBackgroundColor(resources.getColor(R.color.colorAccent,null))
+                            datePickerDialog.getButton(DatePickerDialog.BUTTON_NEGATIVE).setBackgroundColor(resources.getColor(R.color.colorAccent,null))
+                            datePickerDialog.show()
+                        }
+
+                    }
+
+                })
+
+
+                //caso edit_text receba focus, se executa o onClick para criar o datepicker
+                myDialogAddView.date_edit_text.setOnFocusChangeListener(View.OnFocusChangeListener { innerView, hasFocus ->
+                    if(innerView.isFocused==true){
+                       myDialogAddView.date_edit_text.performClick()
                     }
                 })
 
@@ -207,7 +230,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                 val meuAlert = meuBuilder.create()
 
                 meuAlert.show()
-
+                //caso os dados sejam válidos, se adiciona o aluno no banco de dados e a lista do recycler
                 meuAlert.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
                     var nome = myDialogAddView.nome_edit_text
                     var data = myDialogAddView.date_edit_text
@@ -215,6 +238,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                         val dbHandler = DBHelper(context!!, null)
                         val aluno =
                             Aluno(nome.text.toString(), data.text.toString())
+                        //Tenta inserir o aluno novo ao database e informa em caso de sucesso ou erro
                         try {
                             val myLong: Long = dbHandler.addAluno(aluno)
                             if (myLong != -1L) {
@@ -229,7 +253,7 @@ class AlunoFragment : androidx.fragment.app.Fragment(),View.OnClickListener {
                                     nome.text.toString() + " foi adicionado ao database com a matricula: "+ aluno.matricula.toString(),
                                     Toast.LENGTH_LONG
                                 ).show()
-                                //atualiza o
+                                //atualiza o recyclerview
                                 mRecycler.adapter!!.notifyItemInserted(alunos.size - 1)
 
                             } else {

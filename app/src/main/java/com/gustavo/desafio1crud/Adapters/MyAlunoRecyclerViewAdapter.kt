@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.selection.SelectionTracker
 import com.google.android.material.card.MaterialCardView
 import com.gustavo.desafio1crud.AlunoFragment
@@ -53,8 +54,11 @@ class MyAlunoRecyclerViewAdapter(
         val DBHandler: DBHelper= DBHelper(context, null)
         val controle =DBHandler.deleteAluno(matricula);
         if(controle == true) {
+            Toast.makeText(context,mValues.get(position).nome+" foi deletado",Toast.LENGTH_SHORT).show()
             mValues.remove(mValues.get(position))
             this.notifyItemRemoved(position)
+            if(position<itemCount){
+            this.notifyItemRangeChanged(position,itemCount - position)}
         }
     }
 
